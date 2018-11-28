@@ -19,6 +19,10 @@
     width: 80%;
 }
 
+.signaturePad {
+    border: 1px solid black;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
