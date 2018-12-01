@@ -1,18 +1,19 @@
-import React, { Component } from "react";
-import PropTypes from "prop-types";
-import { TemporaryDrawer } from "./TemporaryDrawer.js";
-import { withStyles } from "@material-ui/core/styles";
-import AppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/Toolbar";
-import Typography from "@material-ui/core/Typography";
-import IconButton from "@material-ui/core/IconButton";
 import AccountCircle from "@material-ui/icons/AccountCircle";
-import Popover from "@material-ui/core/Popover";
+import AppBar from "@material-ui/core/AppBar";
+import Email from "@material-ui/icons/Email";
+import IconButton from "@material-ui/core/IconButton";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
-import Person from "@material-ui/icons/Person";
 import ListItemText from "@material-ui/core/ListItemText";
-import Email from "@material-ui/icons/Email";
+import Person from "@material-ui/icons/Person";
+import Popover from "@material-ui/core/Popover";
+import Toolbar from "@material-ui/core/Toolbar";
+import Typography from "@material-ui/core/Typography";
+import PropTypes from "prop-types";
+import React, { Component } from "react";
+import { withStyles } from "@material-ui/core/styles";
+
+import { TemporaryDrawer } from "./TemporaryDrawer.js";
 
 const styles = {
   root: {
