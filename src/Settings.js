@@ -15,8 +15,8 @@ class Settings extends Component {
     super(props);
     this.state = {
       spreadsheetId: "",
-      sheetName: "",
-      auxAutocompleteSheetName: ""
+      attendanceSheet: "",
+      autocompleteSheet: ""
     };
   }
 
@@ -40,9 +40,10 @@ class Settings extends Component {
               console.log(json);
               this.setState({
                 spreadsheetId: json.spreadsheetId,
-                attedanceSheet: json.attendanceSheet,
+                attendanceSheet: json.attendanceSheet,
                 autocompleteSheet: json.autocompleteSheet
               });
+              console.log(this.state);
             })
             .catch(error => {
               console.log(error);
@@ -72,14 +73,14 @@ class Settings extends Component {
   handleSubmit = event => {
     event.preventDefault();
     const { enqueueSnackbar } = this.props;
-    const { spreadsheetId, sheetName, auxAutocompleteSheetName } = this.state;
+    const { spreadsheetId, attendanceSheet, autocompleteSheet } = this.state;
     let isValidForm = true;
     if (spreadsheetId.trim().length === 0) {
       enqueueSnackbar("Spreadsheet ID cannot be empty", { variant: "error" });
       isValidForm = false;
     }
 
-    if (sheetName.trim().length === 0) {
+    if (attendanceSheet.trim().length === 0) {
       enqueueSnackbar("Roll sheet name cannot be empty", { variant: "error" });
       isValidForm = false;
     }
@@ -87,13 +88,13 @@ class Settings extends Component {
     if (isValidForm) {
       const body = {
         spreadsheetId,
-        sheetName,
-        auxAutocompleteSheetName
+        attendanceSheet,
+        autocompleteSheet
       };
 
       const options = {
         method: "POST",
-        body: body,
+        body: JSON.stringify(body),
         headers: {
           Authorization: `Bearer ${this.props.token}`
         },
@@ -172,7 +173,7 @@ class Settings extends Component {
                 <TextField
                   required
                   id="sheetName"
-                  value={this.state.sheetName}
+                  value={this.state.attendanceSheet}
                   className={classes.textField}
                   label="Roll sheet"
                   margin="normal"
@@ -192,7 +193,7 @@ class Settings extends Component {
                   id="auxAutocompleteSheetName"
                   className={classes.textField}
                   label="Autocomplete helper sheet"
-                  value={this.state.auxAutocompleteSheetName}
+                  value={this.state.autocompleteSheet}
                   margin="normal"
                   fullWidth
                   onChange={this.handleChange("auxAutocompleteSheetName")}

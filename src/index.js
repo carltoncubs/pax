@@ -51,7 +51,13 @@ class App extends Component {
 
   googleResponse = googleResp => {
     const tokenBlob = new Blob(
-      [JSON.stringify({ access_token: googleResp.accessToken }, null, 2)],
+      [
+        JSON.stringify(
+          { accessToken: googleResp.accessToken, user: googleResp.profileObj },
+          null,
+          2
+        )
+      ],
       { type: "application/json" }
     );
 
@@ -102,30 +108,49 @@ class App extends Component {
             <Route
               path="/sign-out"
               exact
-              component={withSnackbar(SignOutForm)}
+              render={props => (
+                <SignOutForm
+                  {...props}
+                  email={this.state.user.email}
+                  name={this.state.user.name}
+                  token={this.state.token}
+                />
+              )}
             />
-            <Route path="/settings" exact component={withSnackbar(Settings)} />
+            <Route
+              path="/settings"
+              exact
+              render={props => (
+                <Settings
+                  {...props}
+                  email={this.state.user.email}
+                  name={this.state.user.name}
+                  token={this.state.token}
+                />
+              )}
+            />
             <Route path="/privacy" exact component={Privacy} />
           </div>
         </Router>
       );
+    } else {
+      const clientId = config.GOOGLE_CLIENT_ID;
+      const success = this.googleResponse;
+      const error = this.onFailure;
+      return (
+        <GoogleLogin
+          clientId={clientId}
+          onSuccess={success}
+          onFailure={error}
+          offline={false}
+          approvalPrompt="force"
+          responseType="id_token"
+          isSignedIn
+          theme="dark"
+          uxMode="redirect"
+        />
+      );
     }
-    const clientId = config.GOOGLE_CLIENT_ID;
-    const success = this.googleResponse;
-    const error = this.onFailure;
-    return (
-      <GoogleLogin
-        clientId={clientId}
-        onSuccess={success}
-        onFailure={error}
-        offline={false}
-        approvalPrompt="force"
-        responseType="id_token"
-        isSignedIn
-        theme="dark"
-        uxMode="redirect"
-      />
-    );
   }
 }
 

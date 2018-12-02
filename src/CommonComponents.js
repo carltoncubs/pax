@@ -11,7 +11,7 @@ export class AutoCompleteTextBox extends Component {
   }
 
   render() {
-    return <TextField label={this.props.label} />;
+    return <TextField {...this.props} />;
   }
 }
 
@@ -21,7 +21,7 @@ export class SignaturePadWrapper extends Component {
       <div className="signaturePad">
         <SignaturePad
           options={{ backgroundColor: "rgb(255,255,255)" }}
-        ref={ref => (this.signaturePad = ref)}
+          ref={ref => (this.signaturePad = ref)}
         />
       </div>
     );

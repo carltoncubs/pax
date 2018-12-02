@@ -1,11 +1,14 @@
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
 import Icon from "@material-ui/core/Icon";
-import TextField from "@material-ui/core/TextField";
+import moment from "moment";
 import { withSnackbar } from "notistack";
 import React, { Component } from "react";
 
-import { SignaturePadWrapper } from "./CommonComponents.js";
+import {
+  AutoCompleteTextBox,
+  SignaturePadWrapper
+} from "./CommonComponents.js";
 import Header from "./Header.js";
 import config from "./config.json";
 
@@ -28,10 +31,6 @@ class SignInForm extends Component {
   handleSubmit = event => {
     event.preventDefault();
     const { enqueueSnackbar } = this.props;
-    this.setState({
-      cubSignature: this.cubSignaturePad.signaturePad.toDataURL(),
-      parentSignature: this.parentSignaturePad.signaturePad.toDataURL()
-    });
     let isValidForm = true;
 
     if (this.state.cubName.trim() === "") {
@@ -52,11 +51,19 @@ class SignInForm extends Component {
     }
 
     if (isValidForm) {
-      const { cubName, cubSignature, parentSignature } = this.state;
-      const body = new Blob(
-        [JSON.stringify({ cubName, cubSignature, parentSignature })],
-        { type: "application/json" }
-      );
+      const { cubName } = this.state;
+      const cubSignature = this.cubSignaturePad.signaturePad.toDataURL();
+      const parentSignature = this.parentSignaturePad.signaturePad.toDataURL();
+      const timestamp = moment().format("HH:MM:SS ");
+      const date = moment().format("YYYY-MM-DD");
+      const body = JSON.stringify({
+        cubName,
+        cubSignature,
+        parentSignature,
+        timestamp,
+        date
+      });
+
       const options = {
         method: "POST",
         body: body,
@@ -69,8 +76,14 @@ class SignInForm extends Component {
 
       fetch(`${config.API_URL}/v1/sign-in`, options)
         .then(resp => {
-          console.log(resp);
           enqueueSnackbar(`${cubName} is signed in`, { variant: "success" });
+          this.setState({
+            cubName: "",
+            cubSignature: "",
+            parentSignature: ""
+          });
+          this.cubSignaturePad.signaturePad.clear();
+          this.parentSignaturePad.signaturePad.clear();
         })
         .catch(err => {
           console.log(err);
@@ -80,6 +93,14 @@ class SignInForm extends Component {
         });
     }
   };
+
+  onComponentDidUpdate() {
+    console.log("updating...");
+    this.cubSignaturePad.signaturePad.fromDataURL(this.state.cubSignature);
+    this.parentSignaturePad.signaturePad.fromDataURL(
+      this.state.parentSignature
+    );
+  }
 
   render() {
     return (
@@ -99,11 +120,12 @@ class SignInForm extends Component {
           <Grid container spacing={40}>
             <Grid item xs={12}>
               <Grid container justify="center">
-                <TextField
+                <AutoCompleteTextBox
                   id="cubName"
                   label="Cub Name"
                   onChange={this.handleChange("cubName")}
                   fullWidth
+                  value={this.state.cubName}
                 />
               </Grid>
             </Grid>
@@ -113,6 +135,7 @@ class SignInForm extends Component {
                   <SignaturePadWrapper
                     label="Cub Sign In"
                     ref={ref => (this.cubSignaturePad = ref)}
+                    contents={this.state.cubSignature}
                   />
                 </Grid>
 
@@ -120,6 +143,7 @@ class SignInForm extends Component {
                   <SignaturePadWrapper
                     label="Parent Sign In"
                     ref={ref => (this.parentSignaturePad = ref)}
+                    contents={this.state.parentSignature}
                   />
                 </Grid>
               </Grid>

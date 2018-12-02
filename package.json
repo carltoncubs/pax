@@ -38,6 +38,7 @@
     "jest-resolve": "23.6.0",
     "materialize-css": "^1.0.0-rc.2",
     "mini-css-extract-plugin": "0.4.3",
+    "moment": "^2.22.2",
     "notistack": "^0.3.9",
     "optimize-css-assets-webpack-plugin": "5.0.1",
     "pnp-webpack-plugin": "1.1.0",

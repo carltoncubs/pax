@@ -45,7 +45,7 @@ class SignOutForm extends Component {
 
       const options = {
         method: "POST",
-        body: body,
+        body: JSON.stringify(body),
         headers: {
           Authorization: `Bearer ${this.props.token}`
         },
@@ -57,6 +57,11 @@ class SignOutForm extends Component {
         .then(resp => {
           console.log(resp);
           enqueueSnackbar(`${cubName} is signed out`, { variant: "success" });
+          this.setState({
+            cubName: "",
+            parentSignature: ""
+          });
+          this.parentSignaturePad.signaturePad.clear();
         })
         .catch(err => {
           console.log(err);
@@ -96,6 +101,7 @@ class SignOutForm extends Component {
                   id="cubName"
                   label="Cub Name"
                   fullWidth
+                  value={this.state.cubName}
                   onChange={this.handleChange("cubName")}
                 />
               </Grid>
