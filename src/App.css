@@ -1,5 +1,7 @@
-.App {
-  text-align: center;
+body {
+    font-family: roboto, sans-serif;
+    background-color: ghostwhite;
+    color: #222222;
 }
 
 .App-logo {
@@ -8,7 +10,7 @@
 
 .App-header {
   background-color: yellow;
-  color: black;
+  /* color: black; */
 }
 
 .App-link {

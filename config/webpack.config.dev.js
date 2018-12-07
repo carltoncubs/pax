@@ -346,7 +346,7 @@ module.exports = {
       template: paths.appHtml
     }),
     new HtmlWebpackIncludeAssetsPlugin({
-      assets: ["js/materialize.min.js", "js/materializeInit.js", "css/App.css"],
+      assets: ["js/materialize.min.js", "js/materializeInit.js"],
       append: true
     }),
     // Makes some environment variables available in index.html.
