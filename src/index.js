@@ -1,10 +1,11 @@
 import amber from "@material-ui/core/colors/";
-import { SnackbarProvider, withSnackbar } from "notistack";
+import { SnackbarProvider } from "notistack";
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
 import { GoogleLogin } from "react-google-login";
 import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 import yellow from "@material-ui/core/colors/yellow";
+import "typeface-roboto";
 
 import Privacy from "./Privacy";
 import Root from "./Root";
@@ -18,6 +19,9 @@ import { BrowserRouter as Router, Route } from "react-router-dom";
 import "./App.css";
 
 const theme = createMuiTheme({
+  typography: {
+    useNextVariants: true
+  },
   palette: {
     primary: yellow,
     secondary: amber
