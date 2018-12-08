@@ -1,12 +1,6 @@
-import amber from "@material-ui/core/colors/";
-import { SnackbarProvider } from "notistack";
-import React, { Component } from "react";
-import ReactDOM from "react-dom";
-import { GoogleLogin } from "react-google-login";
-import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles";
-import yellow from "@material-ui/core/colors/yellow";
-import "typeface-roboto";
 import moment from "moment";
+import React, { Component } from "react";
+import { GoogleLogin } from "react-google-login";
 
 import Privacy from "./Privacy";
 import Root from "./Root";
@@ -14,10 +8,7 @@ import Settings from "./Settings";
 import SignInForm from "./SignInForm";
 import SignOutForm from "./SignOutForm";
 import config from "./config.json";
-import * as serviceWorker from "./serviceWorker";
 import { BrowserRouter as Router, Route } from "react-router-dom";
-
-import "./App.css";
 
 export default class App extends Component {
   constructor(props) {
@@ -253,6 +244,56 @@ export default class App extends Component {
     }
   };
 
+  settingsGetter = ctx => () => {
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${this.props.token}`
+      },
+      mode: "cors",
+      cache: "default"
+    };
+
+    fetch(`${config.API_URL}/v1/settings`, options)
+      .then(resp => {
+        if (resp.ok) {
+          const { enqueueSnackbar } = this.props;
+          resp
+            .json()
+            .then(json => {
+              this.setState({
+                spreadsheetId: json.spreadsheetId ? json.spreadsheetId : "",
+                attendanceSheet: json.attendanceSheet
+                  ? json.attendanceSheet
+                  : "",
+                autocompleteSheet: json.autocompleteSheet
+                  ? json.autocompleteSheet
+                  : ""
+              });
+            })
+            .catch(error => {
+              console.log(error);
+              enqueueSnackbar(
+                "There was a problem getting the previously saved settings",
+                { variant: "error" }
+              );
+            });
+        }
+      })
+      .catch(err => {
+        console.log(err);
+        const { enqueueSnackbar } = this.props;
+        enqueueSnackbar(
+          "There was a problem getting the previously saved settings",
+          { variant: "error" }
+        );
+      });
+  };
+
+  autocompletion = () => {
+    return [];
+  };
+
   render() {
     if (!!this.state.isAuthenticated) {
       console.log("User is authorised");
@@ -267,6 +308,7 @@ export default class App extends Component {
                 <SignInForm
                   {...props}
                   onSubmit={this.onSignInSubmit}
+                  autocompletion={this.autocompletion}
                   email={this.state.user.email}
                   name={this.state.user.name}
                   token={this.state.token}
@@ -280,6 +322,7 @@ export default class App extends Component {
                 <SignOutForm
                   {...props}
                   onSubmit={this.onSignOutSubmit}
+                  autocompletion={this.autocompletion}
                   email={this.state.user.email}
                   name={this.state.user.name}
                   token={this.state.token}
@@ -293,6 +336,7 @@ export default class App extends Component {
                 <Settings
                   {...props}
                   onSubmit={this.onSettingsSubmit}
+                  settingsGetter={this.settingsGetter}
                   email={this.state.user.email}
                   name={this.state.user.name}
                   token={this.state.token}
