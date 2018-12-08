@@ -1,11 +1,13 @@
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
 import Icon from "@material-ui/core/Icon";
-import TextField from "@material-ui/core/TextField";
 import { withSnackbar } from "notistack";
 import React, { Component } from "react";
 
-import { SignaturePadWrapper } from "./CommonComponents.js";
+import {
+  SignaturePadWrapper,
+  AutoCompleteTextBox
+} from "./CommonComponents.js";
 import Header from "./Header.js";
 import config from "./config.json";
 
@@ -96,7 +98,7 @@ class SignOutForm extends Component {
           <Grid container spacing={40}>
             <Grid item xs={12}>
               <Grid container justify="center">
-                <TextField
+                <AutoCompleteTextBox
                   required
                   id="cubName"
                   label="Cub Name"

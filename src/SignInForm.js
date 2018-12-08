@@ -20,6 +20,7 @@ class SignInForm extends Component {
       cubSignature: "",
       parentSignature: ""
     };
+    this.onSubmit = this.props.onSubmit.bind(this);
   }
 
   handleChange = name => event => {
