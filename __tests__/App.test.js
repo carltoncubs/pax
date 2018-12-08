@@ -1,7 +1,17 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import App from "./App";
+import Button from "@material-ui/core/Button";
 import fetch from "jest-fetch-mock";
+import { Enzyme, shallow, render, mount } from "enzyme";
+
+import App from "../src/App";
+import SignInForm from "../src/SignInForm";
+import SignOutForm from "../src/SignOutForm";
+import Settings from "../src/Settings";
+import {
+  AutoCompleteTextBox,
+  SignaturePadWrapper
+} from "../src/CommonComponents";
 
 global.fetch = fetch;
 
@@ -32,7 +42,7 @@ it(
 );
 
 describe("side menu", () => {
-  it("opens on the LHS when the humburger button is pressed", () => {
+  it("opens on the LHS when the hamburger button is pressed", () => {
     expect(false).toEqual(true);
   });
 
@@ -73,15 +83,32 @@ describe("sign in page", () => {
   it("notifies the user if the sign in is unsuccessful", () => {
     expect(false).toEqual(true);
   });
+
+  it(
+    "provides autocomplete for the cub name text box if" +
+      " names are returned by the /names endpoint",
+    () => {
+      expect(false).toEqual(true);
+    }
+  );
 });
 
 describe("sign out page", () => {
-  it("has a text box for the cub's name and a signature pad for the parent's signature", () => {
-    expect(false).toEqual(true);
-  });
+  it(
+    "has a text box for the cub's name, a signature pad for the parent's signature" +
+      " and a submit button",
+    () => {
+      const wrapper = mount(<SignOutForm />);
+      expect(wrapper.find("SignaturePadWrapper").length).toEqual(1);
+      expect(wrapper.find(AutoCompleteTextBox).length).toEqual(1);
+      expect(wrapper.find(Button).length).toEqual(1);
+    }
+  );
 
   it("does not allow the form to be submitted unless all the fields are filled in", () => {
-    expect(false).toEqual(true);
+    const wrapper = mount(<SignOutForm />);
+    const submitButton = wrapper.find(Button);
+    console.log(submitButton.simulate("click"));
   });
 
   it("submits data to the /sign-out endpoint", () => {
@@ -99,6 +126,14 @@ describe("sign out page", () => {
   it("notifies the user if the sign out is unsuccessful", () => {
     expect(false).toEqual(true);
   });
+
+  it(
+    "provides autocomplete for the cub name text box if" +
+      " names are returned by the /names endpoint",
+    () => {
+      expect(false).toEqual(true);
+    }
+  );
 });
 
 describe("settings page", () => {
