@@ -48,7 +48,6 @@ class SignOutForm extends Component {
   };
 
   render() {
-    console.log(this.props.token);
     return (
       <BaseForm
         title="Sign Out"
