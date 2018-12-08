@@ -48,10 +48,11 @@ class SignOutForm extends Component {
   };
 
   render() {
+    console.log(this.props.token);
     return (
       <BaseForm
         title="Sign Out"
-        user={this.props.name}
+        name={this.props.name}
         email={this.props.email}
         onSubmit={this.onSubmit}
         autoComplete="off"

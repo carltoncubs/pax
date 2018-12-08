@@ -15,7 +15,10 @@ export default class App extends Component {
     super(props);
     this.state = {
       isAuthenticated: false,
-      user: null,
+      user: {
+        email: "",
+        name: ""
+      },
       token: ""
     };
   }
@@ -32,7 +35,7 @@ export default class App extends Component {
   };
 
   onFailure = err => {
-    console.log(err);
+    console.error(err);
   };
 
   googleResponse = googleResp => {
@@ -54,22 +57,20 @@ export default class App extends Component {
       cache: "default"
     };
 
-    fetch(`${config.API_URL}/v1/auth/google`, options)
-      .then(authResp => {
-        if (authResp.ok) {
-          authResp.json().then(json => {
-            if (json.token) {
-              const { email, name } = googleResp.profileObj;
-              this.setState({
-                isAuthenticated: true,
-                token: json.token,
-                user: { email, name }
-              });
-            }
+    return fetch(`${config.API_URL}/v1/auth/google`, options)
+      .then(authResp => authResp.json())
+      .then(json => {
+        if (json.token) {
+          const { email, name } = googleResp.profileObj;
+          this.setState({
+            isAuthenticated: true,
+            token: json.token,
+            user: { email, name }
           });
+          sessionStorage.setItem("token", json.token);
         }
-      })
-      .catch(err => console.log(err));
+        return this.state.isAuthenticated;
+      });
   };
 
   signInValidator = ctx => () => {
@@ -115,7 +116,7 @@ export default class App extends Component {
 
   settingsValidator = ctx => () => {
     const { enqueueSnackbar } = ctx.props;
-    const { spreadsheetId, attendanceSheet, autocompleteSheet } = ctx.state;
+    const { spreadsheetId, attendanceSheet } = ctx.state;
     let isValidForm = true;
     if (spreadsheetId.trim().length === 0) {
       enqueueSnackbar("Spreadsheet ID cannot be empty", { variant: "error" });
@@ -191,7 +192,7 @@ export default class App extends Component {
               });
             })
             .catch(error => {
-              console.log(error);
+              console.error(error);
               enqueueSnackbar(
                 "There was a problem getting the previously saved settings",
                 { variant: "error" }
@@ -200,7 +201,7 @@ export default class App extends Component {
         }
       })
       .catch(err => {
-        console.log(err);
+        console.error(err);
         const { enqueueSnackbar } = this.props;
         enqueueSnackbar(
           "There was a problem getting the previously saved settings",
@@ -213,15 +214,26 @@ export default class App extends Component {
     return [];
   };
 
+  componentDidMount() {
+    const token = sessionStorage.getItem("token");
+    if (!!token) {
+      this.setState({
+        token: token
+      });
+    }
+  }
+
   render() {
     const submitter = this.submitter(config.baseURL, this.state.token);
 
     const signInSubmitter = submitter("sign-in");
     const signOutSubmitter = submitter("sign-out");
     const settingsSubmitter = submitter("settings");
+    const clientId = config.GOOGLE_CLIENT_ID;
+    const success = this.googleResponse;
+    const error = this.onFailure;
 
-    if (!!this.state.isAuthenticated) {
-      console.log("User is authorised");
+    if (this.state.token) {
       return (
         <Router>
           <div>
@@ -275,23 +287,19 @@ export default class App extends Component {
           </div>
         </Router>
       );
-    } else {
-      const clientId = config.GOOGLE_CLIENT_ID;
-      const success = this.googleResponse;
-      const error = this.onFailure;
-      return (
-        <GoogleLogin
-          clientId={clientId}
-          onSuccess={success}
-          onFailure={error}
-          offline={false}
-          approvalPrompt="force"
-          responseType="id_token"
-          isSignedIn
-          theme="dark"
-          uxMode="redirect"
-        />
-      );
     }
+    return (
+      <GoogleLogin
+        clientId={clientId}
+        onSuccess={success}
+        onFailure={error}
+        offline={false}
+        approvalPrompt="force"
+        responseType="id_token"
+        isSignedIn
+        theme="dark"
+        uxMode="redirect"
+      />
+    );
   }
 }

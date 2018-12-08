@@ -3,6 +3,7 @@ import Grid from "@material-ui/core/Grid";
 import Icon from "@material-ui/core/Icon";
 import { withSnackbar } from "notistack";
 import React, { Component } from "react";
+import { Redirect } from "react-router-dom";
 
 import BaseForm from "./BaseForm";
 import { AutoCompleteTextBox, SignaturePadWrapper } from "./CommonComponents";
@@ -14,7 +15,8 @@ class SignInForm extends Component {
       cubName: "",
       cubSignature: "",
       parentSignature: "",
-      nameOptions: []
+      nameOptions: [],
+      prevPath: ""
     };
     this.validator = this.props.validator(this);
     this.submitter = this.props.submitter;
@@ -47,10 +49,17 @@ class SignInForm extends Component {
   };
 
   render() {
+    if (!!!this.props.token) {
+      return (
+        <Redirect
+          to={{ pathname: "/", state: { from: this.props.location.pathname } }}
+        />
+      );
+    }
     return (
       <BaseForm
         title="Sign In"
-        user={this.props.name}
+        name={this.props.name}
         email={this.props.email}
         onSubmit={this.onSubmit}
         autoComplete="off"

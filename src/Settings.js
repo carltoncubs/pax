@@ -58,7 +58,7 @@ class Settings extends Component {
     return (
       <BaseForm
         title="Settings"
-        user={this.props.name}
+        name={this.props.name}
         email={this.props.email}
         onSubmit={this.onSubmit}
         autoComplete="off"
