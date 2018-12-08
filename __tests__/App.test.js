@@ -99,7 +99,13 @@ describe("sign out page", () => {
     "has a text box for the cub's name, a signature pad for the parent's signature" +
       " and a submit button",
     () => {
-      const wrapper = mount(<SignOutForm />);
+      const wrapper = mount(
+        <SignOutForm
+          validator={_ => {}}
+          submitter={() => {}}
+          autocompletion={() => {}}
+        />
+      );
       expect(wrapper.find("SignaturePadWrapper").length).toEqual(1);
       expect(wrapper.find(AutoCompleteTextBox).length).toEqual(1);
       expect(wrapper.find(Button).length).toEqual(1);
@@ -108,12 +114,16 @@ describe("sign out page", () => {
 
   it("does not allow the form to be submitted unless all the fields are filled in", () => {
     const submitterMock = jest.fn();
-    const validatorMock = jest.fn(_ => false);
+    const validatorMock = jest.fn(_ => jest.fn());
     const wrapper = mount(
-      <SignOutForm validator={validatorMock} submitter={submitterMock} />
+      <SignOutForm
+        validator={validatorMock}
+        submitter={submitterMock}
+        autocompletion={() => {}}
+      />
     );
     const submitButton = wrapper.find(Button);
-    console.log(submitButton.simulate("click"));
+    submitButton.simulate("click");
     expect(validatorMock.mock.calls.length).toBe(1);
     expect(submitterMock.mock.calls.length).toBe(0);
   });
