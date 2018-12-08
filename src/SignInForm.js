@@ -16,7 +16,8 @@ class SignInForm extends Component {
       parentSignature: "",
       nameOptions: []
     };
-    this.onSubmit = this.props.onSubmit(this);
+    this.validator = this.props.validator(this);
+    this.submitter = this.props.submitter;
     this.autocompletion = this.props.autocompletion;
   }
 
@@ -26,6 +27,18 @@ class SignInForm extends Component {
       nameOptions: opts
     });
   }
+
+  onSubmit = event => {
+    event.preventDefault();
+    if (this.validator()) {
+      const { cubName, cubSignature, parentSignature } = this.state;
+      this.submitter("sign-in", {
+        cubName: cubName,
+        cubSignature: cubSignature,
+        parentSignature: parentSignature
+      });
+    }
+  };
 
   handleChange = name => event => {
     this.setState({

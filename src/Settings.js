@@ -17,13 +17,26 @@ class Settings extends Component {
       attendanceSheet: "",
       autocompleteSheet: ""
     };
-    this.onSubmit = this.props.onSubmit(this);
+    this.validator = this.props.validator(this);
+    this.submitter = this.props.submitter;
     this.settingsGetter = this.props.settingsGetter(this);
   }
 
   componentDidMount() {
     this.settingsGetter();
   }
+
+  onSubmit = event => {
+    event.preventDefault();
+    if (this.validator()) {
+      const { spreadsheetId, attendanceSheet, autocompleteSheet } = this.state;
+      this.submitter("sign-in", {
+        spreadsheetId: spreadsheetId,
+        attendanceSheet: attendanceSheet,
+        autocompleteSheet: autocompleteSheet
+      });
+    }
+  };
 
   handleChange = fieldName => event => {
     this.setState({

@@ -18,7 +18,8 @@ class SignOutForm extends Component {
       parentSignature: "",
       nameOptions: []
     };
-    this.onSubmit = this.props.onSubmit(this);
+    this.validator = this.props.validator(this);
+    this.submitter = this.props.submitter;
     this.autocompletion = this.props.autocompletion;
   }
 
@@ -28,6 +29,17 @@ class SignOutForm extends Component {
       nameOptions: opts
     });
   }
+
+  onSubmit = event => {
+    event.preventDefault();
+    if (this.validator()) {
+      const { cubName, parentSignature } = this.state;
+      this.submitter("sign-in", {
+        cubName: cubName,
+        parentSignature: parentSignature
+      });
+    }
+  };
 
   handleChange = name => event => {
     this.setState({

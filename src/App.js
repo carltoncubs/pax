@@ -72,8 +72,7 @@ export default class App extends Component {
       .catch(err => console.log(err));
   };
 
-  onSignInSubmit = ctx => event => {
-    event.preventDefault();
+  signInValidator = ctx => () => {
     const { enqueueSnackbar } = ctx.props;
     let isValidForm = true;
 
@@ -94,60 +93,14 @@ export default class App extends Component {
       });
     }
 
-    if (isValidForm) {
-      const { cubName } = ctx.state;
-      const cubSignature = ctx.cubSignaturePad.signaturePad.toDataURL();
-      const parentSignature = ctx.parentSignaturePad.signaturePad.toDataURL();
-      const timestamp = moment().format("HH:MM:SS ");
-      const date = moment().format("YYYY-MM-DD");
-      const body = JSON.stringify({
-        cubName,
-        cubSignature,
-        parentSignature,
-        timestamp,
-        date
-      });
-
-      const options = {
-        method: "POST",
-        body: body,
-        headers: {
-          Authorization: `Bearer ${ctx.props.token}`
-        },
-        mode: "cors",
-        cache: "default"
-      };
-
-      fetch(`${config.API_URL}/v1/sign-in`, options)
-        .then(resp => {
-          enqueueSnackbar(`${cubName} is signed in`, { variant: "success" });
-          ctx.setState({
-            cubName: "",
-            cubSignature: "",
-            parentSignature: ""
-          });
-          ctx.cubSignaturePad.signaturePad.clear();
-          ctx.parentSignaturePad.signaturePad.clear();
-        })
-        .catch(err => {
-          console.log(err);
-          enqueueSnackbar(`There was a problem signing ${cubName} in`, {
-            variant: "error"
-          });
-        });
-    }
+    return isValidForm;
   };
 
-  onSignOutSubmit = ctx => event => {
-    event.preventDefault();
-    ctx.setState({
-      parentSignature: ctx.parentSignaturePad.signaturePad.toDataURL()
-    });
+  signOutValidator = ctx => () => {
     const { enqueueSnackbar } = ctx.props;
-    const { cubName, parentSignature } = ctx.state;
     let isValidForm = true;
 
-    if (cubName.trim() === "") {
+    if (ctx.state.cubName.trim() === "") {
       isValidForm = false;
       enqueueSnackbar("Cub name is required", { variant: "error" });
     }
@@ -157,43 +110,10 @@ export default class App extends Component {
       enqueueSnackbar("Parent signature is required", { variant: "error" });
     }
 
-    if (isValidForm) {
-      const body = {
-        cubName: cubName,
-        parentSignature: parentSignature
-      };
-
-      const options = {
-        method: "POST",
-        body: JSON.stringify(body),
-        headers: {
-          Authorization: `Bearer ${ctx.props.token}`
-        },
-        mode: "cors",
-        cache: "default"
-      };
-
-      fetch(`${config.API_URL}/v1/sign-out`, options)
-        .then(resp => {
-          console.log(resp);
-          enqueueSnackbar(`${cubName} is signed out`, { variant: "success" });
-          ctx.setState({
-            cubName: "",
-            parentSignature: ""
-          });
-          ctx.parentSignaturePad.signaturePad.clear();
-        })
-        .catch(err => {
-          console.log(err);
-          enqueueSnackbar(`There was a problem signing ${cubName} out`, {
-            variant: "error"
-          });
-        });
-    }
+    return isValidForm;
   };
 
-  onSettingsSubmit = ctx => event => {
-    event.preventDefault();
+  settingsValidator = ctx => () => {
     const { enqueueSnackbar } = ctx.props;
     const { spreadsheetId, attendanceSheet, autocompleteSheet } = ctx.state;
     let isValidForm = true;
@@ -207,41 +127,40 @@ export default class App extends Component {
       isValidForm = false;
     }
 
-    if (isValidForm) {
-      const body = {
-        spreadsheetId,
-        attendanceSheet,
-        autocompleteSheet
-      };
+    return isValidForm;
+  };
 
-      const options = {
-        method: "POST",
-        body: JSON.stringify(body),
-        headers: {
-          Authorization: `Bearer ${ctx.props.token}`
-        },
-        mode: "cors",
-        cache: "default"
-      };
+  submitter = baseURL => token => endpoint => ctx => data => successMsg => errorMsg => {
+    const { enqueueSnackbar } = ctx.props;
+    const timestamp = moment().format("HH:MM:SS ");
+    const date = moment().format("YYYY-MM-DD");
+    data.timestamp = timestamp;
+    data.date = date;
 
-      fetch(`${config.API_URL}/v1/settings`, options)
-        .then(result => {
-          if (result.ok) {
-            enqueueSnackbar("Saved settings", {
-              variant: "success"
-            });
-          } else {
-            enqueueSnackbar("There was problem saving the settings", {
-              variant: "error"
-            });
-          }
-        })
-        .catch(err =>
-          enqueueSnackbar("There was a problem saving the settings", {
-            variant: "error"
-          })
-        );
-    }
+    const body = JSON.stringify(data);
+
+    const options = {
+      method: "POST",
+      body: body,
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      mode: "cors",
+      cache: "default"
+    };
+
+    fetch(`${baseURL}/v1/${endpoint}`, options)
+      .then(resp => {
+        enqueueSnackbar(successMsg, {
+          variant: "success"
+        });
+      })
+      .catch(error => {
+        console.error(error);
+        enqueueSnackbar(errorMsg, {
+          variant: "error"
+        });
+      });
   };
 
   settingsGetter = ctx => () => {
@@ -295,6 +214,12 @@ export default class App extends Component {
   };
 
   render() {
+    const submitter = this.submitter(config.baseURL, this.state.token);
+
+    const signInSubmitter = submitter("sign-in");
+    const signOutSubmitter = submitter("sign-out");
+    const settingsSubmitter = submitter("settings");
+
     if (!!this.state.isAuthenticated) {
       console.log("User is authorised");
       return (
@@ -307,7 +232,8 @@ export default class App extends Component {
               render={props => (
                 <SignInForm
                   {...props}
-                  onSubmit={this.onSignInSubmit}
+                  validator={this.signInValidator}
+                  submitter={signInSubmitter}
                   autocompletion={this.autocompletion}
                   email={this.state.user.email}
                   name={this.state.user.name}
@@ -321,7 +247,8 @@ export default class App extends Component {
               render={props => (
                 <SignOutForm
                   {...props}
-                  onSubmit={this.onSignOutSubmit}
+                  validator={this.signOutValidator}
+                  submitter={signOutSubmitter}
                   autocompletion={this.autocompletion}
                   email={this.state.user.email}
                   name={this.state.user.name}
@@ -335,7 +262,8 @@ export default class App extends Component {
               render={props => (
                 <Settings
                   {...props}
-                  onSubmit={this.onSettingsSubmit}
+                  validator={this.settingsValidator}
+                  submitter={settingsSubmitter}
                   settingsGetter={this.settingsGetter}
                   email={this.state.user.email}
                   name={this.state.user.name}
