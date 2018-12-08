@@ -18,61 +18,8 @@ class SignOutForm extends Component {
       cubName: "",
       parentSignature: ""
     };
+    this.onSubmit = this.props.onSubmit(this);
   }
-
-  handleSubmit = event => {
-    event.preventDefault();
-    this.setState({
-      parentSignature: this.parentSignaturePad.signaturePad.toDataURL()
-    });
-    const { enqueueSnackbar } = this.props;
-    const { cubName, parentSignature } = this.state;
-    let isValidForm = true;
-
-    if (cubName.trim() === "") {
-      isValidForm = false;
-      enqueueSnackbar("Cub name is required", { variant: "error" });
-    }
-
-    if (this.parentSignaturePad.signaturePad.isEmpty()) {
-      isValidForm = false;
-      enqueueSnackbar("Parent signature is required", { variant: "error" });
-    }
-
-    if (isValidForm) {
-      const body = {
-        cubName: cubName,
-        parentSignature: parentSignature
-      };
-
-      const options = {
-        method: "POST",
-        body: JSON.stringify(body),
-        headers: {
-          Authorization: `Bearer ${this.props.token}`
-        },
-        mode: "cors",
-        cache: "default"
-      };
-
-      fetch(`${config.API_URL}/v1/sign-out`, options)
-        .then(resp => {
-          console.log(resp);
-          enqueueSnackbar(`${cubName} is signed out`, { variant: "success" });
-          this.setState({
-            cubName: "",
-            parentSignature: ""
-          });
-          this.parentSignaturePad.signaturePad.clear();
-        })
-        .catch(err => {
-          console.log(err);
-          enqueueSnackbar(`There was a problem signing ${cubName} out`, {
-            variant: "error"
-          });
-        });
-    }
-  };
 
   handleChange = name => event => {
     this.setState({
@@ -91,7 +38,7 @@ class SignOutForm extends Component {
         />
         <form
           style={{ paddingTop: 20, paddingLeft: 200, paddingRight: 200 }}
-          onSubmit={this.handleSubmit}
+          onSubmit={this.onSubmit}
           autoComplete="off"
           noValidate
         >

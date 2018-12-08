@@ -6,6 +6,7 @@ import { GoogleLogin } from "react-google-login";
 import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 import yellow from "@material-ui/core/colors/yellow";
 import "typeface-roboto";
+import moment from "moment";
 
 import Privacy from "./Privacy";
 import Root from "./Root";
@@ -78,6 +79,178 @@ export default class App extends Component {
         }
       })
       .catch(err => console.log(err));
+  };
+
+  onSignInSubmit = ctx => event => {
+    event.preventDefault();
+    const { enqueueSnackbar } = ctx.props;
+    let isValidForm = true;
+
+    if (ctx.state.cubName.trim() === "") {
+      isValidForm = false;
+      enqueueSnackbar("Cub's name cannot be empty", { variant: "error" });
+    }
+
+    if (ctx.cubSignaturePad.signaturePad.isEmpty()) {
+      isValidForm = false;
+      enqueueSnackbar("Cub's signature cannot be empty", { variant: "error" });
+    }
+
+    if (ctx.parentSignaturePad.signaturePad.isEmpty()) {
+      isValidForm = false;
+      enqueueSnackbar("Parent's signature cannot be empty", {
+        variant: "error"
+      });
+    }
+
+    if (isValidForm) {
+      const { cubName } = ctx.state;
+      const cubSignature = ctx.cubSignaturePad.signaturePad.toDataURL();
+      const parentSignature = ctx.parentSignaturePad.signaturePad.toDataURL();
+      const timestamp = moment().format("HH:MM:SS ");
+      const date = moment().format("YYYY-MM-DD");
+      const body = JSON.stringify({
+        cubName,
+        cubSignature,
+        parentSignature,
+        timestamp,
+        date
+      });
+
+      const options = {
+        method: "POST",
+        body: body,
+        headers: {
+          Authorization: `Bearer ${ctx.props.token}`
+        },
+        mode: "cors",
+        cache: "default"
+      };
+
+      fetch(`${config.API_URL}/v1/sign-in`, options)
+        .then(resp => {
+          enqueueSnackbar(`${cubName} is signed in`, { variant: "success" });
+          ctx.setState({
+            cubName: "",
+            cubSignature: "",
+            parentSignature: ""
+          });
+          ctx.cubSignaturePad.signaturePad.clear();
+          ctx.parentSignaturePad.signaturePad.clear();
+        })
+        .catch(err => {
+          console.log(err);
+          enqueueSnackbar(`There was a problem signing ${cubName} in`, {
+            variant: "error"
+          });
+        });
+    }
+  };
+
+  onSignOutSubmit = ctx => event => {
+    event.preventDefault();
+    ctx.setState({
+      parentSignature: ctx.parentSignaturePad.signaturePad.toDataURL()
+    });
+    const { enqueueSnackbar } = ctx.props;
+    const { cubName, parentSignature } = ctx.state;
+    let isValidForm = true;
+
+    if (cubName.trim() === "") {
+      isValidForm = false;
+      enqueueSnackbar("Cub name is required", { variant: "error" });
+    }
+
+    if (ctx.parentSignaturePad.signaturePad.isEmpty()) {
+      isValidForm = false;
+      enqueueSnackbar("Parent signature is required", { variant: "error" });
+    }
+
+    if (isValidForm) {
+      const body = {
+        cubName: cubName,
+        parentSignature: parentSignature
+      };
+
+      const options = {
+        method: "POST",
+        body: JSON.stringify(body),
+        headers: {
+          Authorization: `Bearer ${ctx.props.token}`
+        },
+        mode: "cors",
+        cache: "default"
+      };
+
+      fetch(`${config.API_URL}/v1/sign-out`, options)
+        .then(resp => {
+          console.log(resp);
+          enqueueSnackbar(`${cubName} is signed out`, { variant: "success" });
+          ctx.setState({
+            cubName: "",
+            parentSignature: ""
+          });
+          ctx.parentSignaturePad.signaturePad.clear();
+        })
+        .catch(err => {
+          console.log(err);
+          enqueueSnackbar(`There was a problem signing ${cubName} out`, {
+            variant: "error"
+          });
+        });
+    }
+  };
+
+  onSettingsSubmit = ctx => event => {
+    event.preventDefault();
+    const { enqueueSnackbar } = ctx.props;
+    const { spreadsheetId, attendanceSheet, autocompleteSheet } = ctx.state;
+    let isValidForm = true;
+    if (spreadsheetId.trim().length === 0) {
+      enqueueSnackbar("Spreadsheet ID cannot be empty", { variant: "error" });
+      isValidForm = false;
+    }
+
+    if (attendanceSheet.trim().length === 0) {
+      enqueueSnackbar("Roll sheet name cannot be empty", { variant: "error" });
+      isValidForm = false;
+    }
+
+    if (isValidForm) {
+      const body = {
+        spreadsheetId,
+        attendanceSheet,
+        autocompleteSheet
+      };
+
+      const options = {
+        method: "POST",
+        body: JSON.stringify(body),
+        headers: {
+          Authorization: `Bearer ${ctx.props.token}`
+        },
+        mode: "cors",
+        cache: "default"
+      };
+
+      fetch(`${config.API_URL}/v1/settings`, options)
+        .then(result => {
+          if (result.ok) {
+            enqueueSnackbar("Saved settings", {
+              variant: "success"
+            });
+          } else {
+            enqueueSnackbar("There was problem saving the settings", {
+              variant: "error"
+            });
+          }
+        })
+        .catch(err =>
+          enqueueSnackbar("There was a problem saving the settings", {
+            variant: "error"
+          })
+        );
+    }
   };
 
   render() {

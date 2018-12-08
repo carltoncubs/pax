@@ -18,6 +18,7 @@ class Settings extends Component {
       attendanceSheet: "",
       autocompleteSheet: ""
     };
+    this.onSubmit = this.props.onSubmit(this);
   }
 
   componentDidMount() {
@@ -37,13 +38,15 @@ class Settings extends Component {
           resp
             .json()
             .then(json => {
-              console.log(json);
               this.setState({
-                spreadsheetId: json.spreadsheetId,
-                attendanceSheet: json.attendanceSheet,
+                spreadsheetId: json.spreadsheetId ? json.spreadsheetId : "",
+                attendanceSheet: json.attendanceSheet
+                  ? json.attendanceSheet
+                  : "",
                 autocompleteSheet: json.autocompleteSheet
+                  ? json.autocompleteSheet
+                  : ""
               });
-              console.log(this.state);
             })
             .catch(error => {
               console.log(error);
@@ -68,58 +71,6 @@ class Settings extends Component {
     this.setState({
       [fieldName]: event.target.value
     });
-  };
-
-  handleSubmit = event => {
-    event.preventDefault();
-    const { enqueueSnackbar } = this.props;
-    const { spreadsheetId, attendanceSheet, autocompleteSheet } = this.state;
-    let isValidForm = true;
-    if (spreadsheetId.trim().length === 0) {
-      enqueueSnackbar("Spreadsheet ID cannot be empty", { variant: "error" });
-      isValidForm = false;
-    }
-
-    if (attendanceSheet.trim().length === 0) {
-      enqueueSnackbar("Roll sheet name cannot be empty", { variant: "error" });
-      isValidForm = false;
-    }
-
-    if (isValidForm) {
-      const body = {
-        spreadsheetId,
-        attendanceSheet,
-        autocompleteSheet
-      };
-
-      const options = {
-        method: "POST",
-        body: JSON.stringify(body),
-        headers: {
-          Authorization: `Bearer ${this.props.token}`
-        },
-        mode: "cors",
-        cache: "default"
-      };
-
-      fetch(`${config.API_URL}/v1/settings`, options)
-        .then(result => {
-          if (result.ok) {
-            enqueueSnackbar("Saved settings", {
-              variant: "success"
-            });
-          } else {
-            enqueueSnackbar("There was problem saving the settings", {
-              variant: "error"
-            });
-          }
-        })
-        .catch(err =>
-          enqueueSnackbar("There was a problem saving the settings", {
-            variant: "error"
-          })
-        );
-    }
   };
 
   render() {
