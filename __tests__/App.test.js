@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import Button from "@material-ui/core/Button";
 import fetch from "jest-fetch-mock";
 import { Enzyme, shallow, render, mount } from "enzyme";
+import sinon from "sinon";
 
 import App from "../src/App";
 import SignInForm from "../src/SignInForm";
@@ -106,9 +107,15 @@ describe("sign out page", () => {
   );
 
   it("does not allow the form to be submitted unless all the fields are filled in", () => {
-    const wrapper = mount(<SignOutForm />);
+    const submitterMock = jest.fn();
+    const validatorMock = jest.fn(_ => false);
+    const wrapper = mount(
+      <SignOutForm validator={validatorMock} submitter={submitterMock} />
+    );
     const submitButton = wrapper.find(Button);
     console.log(submitButton.simulate("click"));
+    expect(validatorMock.mock.calls.length).toBe(1);
+    expect(submitterMock.mock.calls.length).toBe(0);
   });
 
   it("submits data to the /sign-out endpoint", () => {
