@@ -4,6 +4,10 @@ import Button from "@material-ui/core/Button";
 import fetch from "jest-fetch-mock";
 import { Enzyme, shallow, render, mount } from "enzyme";
 import sinon from "sinon";
+import { when } from "jest-when";
+import { MemoryRouter } from "react-router";
+import { fn as momentProto } from "moment";
+import TextField from "@material-ui/core/TextField";
 
 import App from "../src/App";
 import SignInForm from "../src/SignInForm";
@@ -13,8 +17,7 @@ import {
   AutoCompleteTextBox,
   SignaturePadWrapper
 } from "../src/CommonComponents";
-
-global.fetch = fetch;
+import config from "../src/config.json";
 
 it("renders without crashing", () => {
   const div = document.createElement("div");
@@ -22,76 +25,91 @@ it("renders without crashing", () => {
   ReactDOM.unmountComponentAtNode(div);
 });
 
-it("redirects the user to / for sign in if they are not authenticated", () => {
-  expect(false).toEqual(true);
-});
-
-it("redirects the user to /sign-in from / if they are authenticated", () => {
-  expect(false).toEqual(true);
-});
-
-it("displays a banner if the user is authenticated by google but not invited", () => {
-  expect(false).toEqual(true);
-});
-
-it(
-  "opens a drop down menu displaying logged in user's name, email and" +
-    " logout button when pressing auth circle",
-  () => {
-    expect(false).toEqual(true);
-  }
-);
-
-describe("side menu", () => {
-  it("opens on the LHS when the hamburger button is pressed", () => {
-    expect(false).toEqual(true);
-  });
-
-  it("contains links to all the different pages", () => {
-    expect(false).toEqual(true);
-  });
-
-  it("highlights the current page", () => {
-    expect(false).toEqual(true);
-  });
-});
-
 describe("sign in page", () => {
   it("has a textbox for the name, two signature pads and a submit button", () => {
-    expect(false).toEqual(true);
+    const wrapper = mount(
+      <SignInForm
+        validator={_ => {}}
+        submitter={() => {}}
+        autocompletion={() => {}}
+        token="token"
+      />
+    );
+    expect(wrapper.find("SignaturePadWrapper").length).toEqual(2);
+    expect(wrapper.find(AutoCompleteTextBox).length).toEqual(1);
+    expect(wrapper.find(Button).length).toEqual(1);
   });
 
   it("does not allow the form to be sumbitted unless all the fields are filled in", () => {
-    expect(false).toEqual(true);
+    const submitterMock = jest.fn();
+    const validatorMock = _ => () => false;
+    const wrapper = mount(
+      <SignInForm
+        validator={validatorMock}
+        submitter={submitterMock}
+        autocompletion={() => {}}
+        token="token"
+      />
+    );
+    const submitButton = wrapper.find(Button);
+    submitButton.simulate("submit");
+    expect(submitterMock.mock.calls.length).toBe(0);
   });
 
-  it("submits data to the /sign-in endpoint", () => {
-    expect(false).toEqual(true);
+  it("allows the form to be sumbmitted if all fields a filled in", () => {
+    const submitterMock = jest.fn();
+    const validatorMock = _ => () => true;
+    const wrapper = mount(
+      <SignInForm
+        validator={validatorMock}
+        submitter={submitterMock}
+        autocompletion={() => {}}
+        token="token"
+      />
+    );
+    const submitButton = wrapper.find(Button);
+    wrapper.setState({
+      cubName: "cubName",
+      cubSignature: "cubSig",
+      parentSignature: "parentSig"
+    });
+    submitButton.simulate("submit");
+    expect(submitterMock).toBeCalled();
   });
 
-  it("submits the data in the expect format", () => {
-    expect(false).toEqual(true);
-  });
+  it("adds a timestamp and date to the submitted data", () => {
+    const app = shallow(<App token="token" />);
+    const submitter = app.instance()["submitter"];
+    sinon.useFakeTimers(new Date(2018, 1, 1).getTime());
 
-  it("submits the cub's name, cub's signature and parent's signature", () => {
-    expect(false).toEqual(true);
-  });
+    global.fetch = fetch;
 
-  it("notifies the user if the sign in is successful", () => {
-    expect(false).toEqual(true);
-  });
+    submitter("baseURL")("token")({
+      props: {
+        enqueueSnackbar: jest.fn()
+      }
+    })("endpoint")({
+      cubName: "cubName",
+      cubSignature: "cubSig",
+      parentSignature: "parentSig"
+    })("successMsg")("errorMsg");
 
-  it("notifies the user if the sign in is unsuccessful", () => {
-    expect(false).toEqual(true);
+    expect(global.fetch).toBeCalledWith(expect.any(String), {
+      method: expect.any(String),
+      body: JSON.stringify({
+        cubName: "cubName",
+        cubSignature: "cubSig",
+        parentSignature: "parentSig",
+        timestamp: "00:02:00",
+        date: "2018-02-01"
+      }),
+      headers: {
+        Authorization: expect.any(String)
+      },
+      mode: expect.any(String),
+      cache: expect.any(String)
+    });
   });
-
-  it(
-    "provides autocomplete for the cub name text box if" +
-      " names are returned by the /names endpoint",
-    () => {
-      expect(false).toEqual(true);
-    }
-  );
 });
 
 describe("sign out page", () => {
@@ -113,44 +131,45 @@ describe("sign out page", () => {
   );
 
   it("does not allow the form to be submitted unless all the fields are filled in", () => {
+    const validator = shallow(<App />).instance()["signOutValidator"];
+
     const submitterMock = jest.fn();
-    const validatorMock = jest.fn(_ => jest.fn());
+    const validatorSpy = sinon.spy(validator);
     const wrapper = mount(
       <SignOutForm
-        validator={validatorMock}
+        validator={validatorSpy}
         submitter={submitterMock}
         autocompletion={() => {}}
+        settingsGetter={_ => () => {}}
+        enqueueSnackbar={jest.fn()}
       />
     );
     const submitButton = wrapper.find(Button);
-    submitButton.simulate("click");
-    expect(validatorMock.mock.calls.length).toBe(1);
+    submitButton.simulate("submit");
+    expect(validatorSpy.callCount).toBe(1);
     expect(submitterMock.mock.calls.length).toBe(0);
   });
 
-  it("submits data to the /sign-out endpoint", () => {
-    expect(false).toEqual(true);
-  });
+  it("allows the form to be submitted with all the fields are filled in", () => {
+    const submitterMock = jest.fn();
+    const wrapper = mount(
+      <SignOutForm
+        validator={_ => () => true}
+        submitter={submitterMock}
+        autocompletion={() => {}}
+        enqueueSnackbar={jest.fn()}
+      />
+    );
 
-  it("submits the data in the expect format", () => {
-    expect(false).toEqual(true);
-  });
+    wrapper.setState({
+      cubName: "cubName",
+      parentSignature: "parentSig"
+    });
 
-  it("notifies the user if the sign out is successful", () => {
-    expect(false).toEqual(true);
+    const submitButton = wrapper.find(Button);
+    submitButton.simulate("submit");
+    expect(submitterMock.mock.calls.length).toBe(1);
   });
-
-  it("notifies the user if the sign out is unsuccessful", () => {
-    expect(false).toEqual(true);
-  });
-
-  it(
-    "provides autocomplete for the cub name text box if" +
-      " names are returned by the /names endpoint",
-    () => {
-      expect(false).toEqual(true);
-    }
-  );
 });
 
 describe("settings page", () => {
@@ -158,39 +177,101 @@ describe("settings page", () => {
     "has three textboxes, one for speadsheet ID, attendance sheet and" +
       " autocomplete sheet each and a submit button",
     () => {
-      expect(false).toEqual(true);
+      const wrapper = mount(
+        <Settings
+          validator={_ => {}}
+          submitter={() => {}}
+          settingsGetter={_ => __ => {}}
+        />
+      );
+
+      expect(wrapper.find(TextField).length).toBe(3);
     }
   );
 
   it("tries to get the previously saved settings", () => {
-    expect(false).toEqual(true);
-  });
+    const settingsGetterMockInner = jest.fn();
+    const settingsGetterMock = jest.fn(_ => settingsGetterMockInner);
+    const wrapper = mount(
+      <Settings
+        validator={_ => {}}
+        submitter={() => {}}
+        settingsGetter={settingsGetterMock}
+      />
+    );
 
-  it("notifies the user if it failed to get the previously saved settings", () => {
-    expect(false).toEqual(true);
+    expect(settingsGetterMock).toBeCalled();
+    expect(settingsGetterMockInner).toBeCalled();
   });
 
   it("prefills the settings boxes if the settings are found", () => {
-    expect(false).toEqual(true);
-  });
+    const wrapper = mount(
+      <Settings
+        validator={_ => {}}
+        submitter={() => {}}
+        settingsGetter={ctx => () => {
+          ctx.setState({
+            spreadsheetId: "spreadsheetID",
+            attendanceSheet: "attendanceSheet",
+            autocompleteSheet: "autocompleteSheet"
+          });
+        }}
+      />
+    );
 
-  it("submits the data to the /settings endpoint", () => {
-    expect(false).toEqual(true);
-  });
-
-  it("submits the data in the expect format", () => {
-    expect(false).toEqual(true);
+    expect(wrapper.find("TextField#spreadsheetId").props().value).toBe(
+      "spreadsheetID"
+    );
+    expect(wrapper.find("TextField#attendanceSheet").props().value).toBe(
+      "attendanceSheet"
+    );
+    expect(wrapper.find("TextField#autocompleteSheet").props().value).toBe(
+      "autocompleteSheet"
+    );
   });
 
   it("does not allow the form to be submitted without a spreadsheet ID and attendance sheet", () => {
-    expect(false).toEqual(true);
+    const settingsValidator = shallow(<App />).instance()["settingsValidator"];
+
+    const submitterMock = jest.fn();
+    const validatorSpy = sinon.spy(settingsValidator);
+    const wrapper = mount(
+      <Settings
+        validator={validatorSpy}
+        submitter={submitterMock}
+        autocompletion={() => {}}
+        settingsGetter={_ => () => {}}
+        enqueueSnackbar={jest.fn()}
+      />
+    );
+    const submitButton = wrapper.find(Button);
+    submitButton.simulate("submit");
+    expect(validatorSpy.callCount).toBe(1);
+    expect(submitterMock.mock.calls.length).toBe(0);
   });
 
-  it("notifies the user if it fails to submit the form", () => {
-    expect(false).toEqual(true);
-  });
+  it("does allows the form to be submitted with spreadsheet ID and attendance sheet", () => {
+    const settingsValidator = shallow(<App />).instance()["settingsValidator"];
 
-  it("notifies the user if it successfully submits the form", () => {
-    expect(false).toEqual(true);
+    const submitterMock = jest.fn();
+    const validatorSpy = sinon.spy(settingsValidator);
+    const wrapper = mount(
+      <Settings
+        validator={validatorSpy}
+        submitter={submitterMock}
+        autocompletion={() => {}}
+        settingsGetter={_ => () => {}}
+        enqueueSnackbar={jest.fn()}
+      />
+    );
+
+    wrapper.setState({
+      spreadsheetId: "spreadsheetId",
+      attendanceSheet: "attendanceSheet"
+    });
+    const submitButton = wrapper.find(Button);
+    submitButton.simulate("submit");
+    expect(validatorSpy.callCount).toBe(1);
+    expect(submitterMock.mock.calls.length).toBe(1);
   });
 });
