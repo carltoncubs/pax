@@ -143,6 +143,7 @@
     "jest": "^23.6.0",
     "jest-canvas-mock": "^1.1.0",
     "jest-fetch-mock": "^2.0.1",
+    "jest-when": "^2.0.0",
     "sinon": "^7.1.1"
   }
 }
