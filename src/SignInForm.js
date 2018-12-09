@@ -18,7 +18,7 @@ class SignInForm extends Component {
       nameOptions: [],
       prevPath: ""
     };
-    this.validator = this.props.validator(this);
+    this.validator = this.props.validator(this, "sign-in");
     this.submitter = this.props.submitter;
     this.autocompletion = this.props.autocompletion;
   }
@@ -34,11 +34,15 @@ class SignInForm extends Component {
     event.preventDefault();
     if (this.validator()) {
       const { cubName, cubSignature, parentSignature } = this.state;
-      this.submitter("sign-in", {
-        cubName: cubName,
-        cubSignature: cubSignature,
-        parentSignature: parentSignature
-      });
+      this.submitter(
+        {
+          cubName: cubName,
+          cubSignature: cubSignature,
+          parentSignature: parentSignature
+        },
+        `${cubName} is signed in`,
+        `There was a problem signing ${cubName} in`
+      );
     }
   };
 
@@ -49,13 +53,6 @@ class SignInForm extends Component {
   };
 
   render() {
-    if (!!!this.props.token) {
-      return (
-        <Redirect
-          to={{ pathname: "/", state: { from: this.props.location.pathname } }}
-        />
-      );
-    }
     return (
       <BaseForm
         title="Sign In"
@@ -117,4 +114,4 @@ class SignInForm extends Component {
   }
 }
 
-export default withSnackbar(SignInForm);
+export default SignInForm;

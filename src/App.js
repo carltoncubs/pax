@@ -19,7 +19,7 @@ export default class App extends Component {
         email: "",
         name: ""
       },
-      token: ""
+      token: !!this.props.token ? this.props.token : ""
     };
   }
 
@@ -131,12 +131,10 @@ export default class App extends Component {
     return isValidForm;
   };
 
-  submitter = baseURL => token => endpoint => ctx => data => successMsg => errorMsg => {
+  submitter = baseURL => token => ctx => endpoint => data => successMsg => errorMsg => {
     const { enqueueSnackbar } = ctx.props;
-    const timestamp = moment().format("HH:MM:SS ");
-    const date = moment().format("YYYY-MM-DD");
-    data.timestamp = timestamp;
-    data.date = date;
+    data.timestamp = moment().format("HH:MM:SS");
+    data.date = moment().format("YYYY-MM-DD");
 
     const body = JSON.stringify(data);
 
@@ -168,7 +166,7 @@ export default class App extends Component {
     const options = {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${this.props.token}`
+        Authorization: `Bearer ${this.state.token}`
       },
       mode: "cors",
       cache: "default"
@@ -232,7 +230,6 @@ export default class App extends Component {
     const clientId = config.GOOGLE_CLIENT_ID;
     const success = this.googleResponse;
     const error = this.onFailure;
-
     if (this.state.token) {
       return (
         <Router>
@@ -250,6 +247,7 @@ export default class App extends Component {
                   email={this.state.user.email}
                   name={this.state.user.name}
                   token={this.state.token}
+                  enqueueSnackbar={this.props.enqueueSnackbar}
                 />
               )}
             />
@@ -265,6 +263,7 @@ export default class App extends Component {
                   email={this.state.user.email}
                   name={this.state.user.name}
                   token={this.state.token}
+                  enqueueSnackbar={this.props.enqueueSnackbar}
                 />
               )}
             />
@@ -280,6 +279,7 @@ export default class App extends Component {
                   email={this.state.user.email}
                   name={this.state.user.name}
                   token={this.state.token}
+                  enqueueSnackbar={this.props.enqueueSnackbar}
                 />
               )}
             />

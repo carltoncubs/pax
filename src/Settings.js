@@ -139,4 +139,4 @@ class Settings extends Component {
   }
 }
 
-export default withSnackbar(Settings);
+export default Settings;

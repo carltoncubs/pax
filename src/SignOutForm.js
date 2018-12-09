@@ -101,4 +101,4 @@ class SignOutForm extends Component {
   }
 }
 
-export default withSnackbar(SignOutForm);
+export default SignOutForm;
