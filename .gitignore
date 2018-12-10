@@ -24,3 +24,6 @@ yarn-error.log*
 /src/config.json
 package-lock.json
 /__tests__/.venv/*
+.env.*
+*/__pycache__/*
+*.log
