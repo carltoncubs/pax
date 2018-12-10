@@ -7,7 +7,7 @@ import Root from "./Root";
 import Settings from "./Settings";
 import SignInForm from "./SignInForm";
 import SignOutForm from "./SignOutForm";
-import config from "./config.json";
+// import config from "./config.json";
 import { BrowserRouter as Router, Route } from "react-router-dom";
 
 export default class App extends Component {
@@ -21,6 +21,13 @@ export default class App extends Component {
       },
       token: !!this.props.token ? this.props.token : ""
     };
+
+    this.API_URL = process.env.REACT_APP_API_URL;
+    this.GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+    this.DISABLE_AUTH = process.env.REACT_APP_DISABLE_AUTH;
+    console.log(this.API_URL);
+    console.log(this.GOOGLE_CLIENT_ID);
+    console.log(this.DISABLE_AUTH);
   }
 
   logout = () => {
@@ -57,7 +64,7 @@ export default class App extends Component {
       cache: "default"
     };
 
-    return fetch(`${config.API_URL}/v1/auth/google`, options)
+    return fetch(`${this.API_URL}/v1/auth/google`, options)
       .then(authResp => authResp.json())
       .then(json => {
         if (json.token) {
@@ -172,7 +179,7 @@ export default class App extends Component {
       cache: "default"
     };
 
-    fetch(`${config.API_URL}/v1/settings`, options)
+    fetch(`${this.API_URL}/v1/settings`, options)
       .then(resp => {
         if (resp.ok) {
           const { enqueueSnackbar } = this.props;
@@ -222,15 +229,15 @@ export default class App extends Component {
   }
 
   render() {
-    const submitter = this.submitter(config.baseURL, this.state.token);
+    const submitter = this.submitter(this.API_URL, this.state.token);
 
     const signInSubmitter = submitter("sign-in");
     const signOutSubmitter = submitter("sign-out");
     const settingsSubmitter = submitter("settings");
-    const clientId = config.GOOGLE_CLIENT_ID;
+    const clientId = this.GOOGLE_CLIENT_ID;
     const success = this.googleResponse;
     const error = this.onFailure;
-    if (this.state.token) {
+    if (this.state.token || this.DISABLE_AUTH) {
       return (
         <Router>
           <div>
