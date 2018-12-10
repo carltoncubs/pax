@@ -1,5 +1,7 @@
 # Cub Sign In Frontend
 
+[![BrowserStack Status](https://www.browserstack.com/automate/badge.svg?badge_key=<badge_key>)](https://www.browserstack.com/automate/public-build/bVBHZm0rQ3hoR2FrTkFPenhpTnllSWk2QVNhNGJqR204YXlFQ1ZmTnVrVT0tLWRTZlN1MTVaSDRsckJnVXlpbVh1K1E9PQ==--c6501519dd6c9bb9835010ffdf9def4955b9b666)
+
 This is the frontend for the web app we use for tracking attendance at
 cub nights.
 
