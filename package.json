@@ -135,15 +135,18 @@
     ]
   },
   "devDependencies": {
+    "chromedriver": "^2.44.1",
     "copy-webpack-plugin": "^4.6.0",
     "enzyme": "^3.7.0",
     "enzyme-adapter-react-16": "^1.7.0",
     "enzyme-to-json": "^3.3.5",
+    "geckodriver": "^1.14.1",
     "html-webpack-include-assets-plugin": "^1.0.6",
     "jest": "^23.6.0",
     "jest-canvas-mock": "^1.1.0",
     "jest-fetch-mock": "^2.0.1",
     "jest-when": "^2.0.0",
+    "selenium-webdriver": "^4.0.0-alpha.1",
     "sinon": "^7.1.1"
   }
 }
