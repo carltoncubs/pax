@@ -19,7 +19,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import socketserver 
 import json
 
-class S(BaseHTTPRequestHandler):
+class DummyServer(BaseHTTPRequestHandler):
     def _set_headers(self):
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
@@ -48,7 +48,7 @@ class S(BaseHTTPRequestHandler):
         host, _ = self.client_address
         self._set_headers()
         
-def run(server_class=HTTPServer, handler_class=S, port=8000):
+def run(server_class=HTTPServer, handler_class=DummyServer, port=8000):
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
     print('Starting httpd...')
