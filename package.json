@@ -87,7 +87,8 @@
   "jest": {
     "setupTestFrameworkScriptFile": "<rootDir>__tests__/setup/setupEnzyme.js",
     "testPathIgnorePatterns": [
-      "<rootDir>/__tests__/setup/"
+	"<rootDir>/__tests__/setup/",
+	"<rootDir>/__tests__/.venv/"
     ],
     "collectCoverageFrom": [
       "src/**/*.{js,jsx,ts,tsx}",
