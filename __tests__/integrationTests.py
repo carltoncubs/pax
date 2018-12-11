@@ -36,7 +36,6 @@ class SignInTests(unittest.TestCase):
     def test_google_search(self):
         for driver in self.drivers:
             driver.get("http://localhost:3000/sign-in")
-            time.sleep(10)
 
 
 def build_remote_drivers():
@@ -80,10 +79,6 @@ def main(use_browserstack):
     runner.run(suite)
 
 
-def start_frontend():
-    subprocess.call("npm start")
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Integration test runner.")
     parser.add_argument(
@@ -95,9 +90,6 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     backend = multiprocessing.Process(target=run_server)
-    frontend = multiprocessing.Process(target=start_frontend)
     backend.start()
-    frontend.start()
     main(args.browserstack)
     backend.terminate()
-    frontend.terminate()
