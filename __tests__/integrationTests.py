@@ -20,7 +20,7 @@ from selenium import webdriver
 from dummy_web_server import run as run_server
 
 
-class SignInTests(unittest.TestCase):
+class BaseTest(unittest.TestCase):
     USE_BROWSERSTACK = False
 
     def setUp(self):
@@ -33,9 +33,183 @@ class SignInTests(unittest.TestCase):
         for driver in self.drivers:
             driver.quit()
 
-    def test_google_search(self):
-        for driver in self.drivers:
-            driver.get("http://localhost:3000/sign-in")
+
+class HeaderTests(BaseTest):
+    def test_press_hamburger(self):
+        """Pressing the hamburger button should open the navigation menu."""
+        pass
+
+    def test_press_auth_circle(self):
+        """Pressing the auth circle should display a drop down with the logged
+        in user's email, name and a button to log out.
+
+        """
+        pass
+
+
+class NavMenuTests(BaseTest):
+    def test_highlight_current_page(self):
+        """When open, the nav menu should have the current page's link with
+        the class set to "active".
+
+        """
+        pass
+
+    def test_display_links_to_all_pages(self):
+        """The navigation menu should display links to all pages."""
+        pass
+
+
+class SignInTests(BaseTest):
+    def test_proper_title(self):
+        """On the sign in page the title should be "Carlton Cubs Attendance -
+        Sign Out".
+
+        """
+        pass
+
+    def test_proper_header_text(self):
+        """On the sign in page, the header should display "Sign In"."""
+        pass
+
+    def test_failed_validation(self):
+        """When validaton fails, it should show snackbars for each of the failed
+        validation fields.
+        """
+        pass
+
+    def test_passed_validation(self):
+        """When validation passes, it should send a POST requests to the API
+        with the sign in details.
+
+        """
+        pass
+
+    def test_successful_signin(self):
+        """When the server responds successfully, a snackbar should be
+        displayed saying the cub has been signed in.
+
+        """
+        pass
+
+    def test_failed_signin(self):
+        """When the server responds in failure, a snackbar should be displayed
+        saying the cub was not signed in.
+
+        """
+        pass
+
+    def test_autocompletion(self):
+        """When the user starts typing in the cub name textbox, it should
+        start autocompleting the name.
+
+        """
+        pass
+
+
+class SignOutTests(BaseTest):
+    def test_proper_title(self):
+        """On the sign in page the title should be "Carlton Cubs Attendance -
+        Sign Out".
+
+        """
+        pass
+
+    def test_proper_header_text(self):
+        """On the sign in page, the header should display "Sign Out"."""
+        pass
+
+    def test_failed_validation(self):
+        """When validaton fails, it should show snackbars for each of the failed
+        validation fields.
+        """
+        pass
+
+    def test_passed_validation(self):
+        """When validation passes, it should send a POST requests to the API
+        with the sign in details.
+
+        """
+        pass
+
+    def test_successful_signout(self):
+        """When the server responds successfully, a snackbar should be
+        displayed saying the cub has been signed out.
+
+        """
+        pass
+
+    def test_failed_signout(self):
+        """When the server responds in failure, a snackbar should be displayed
+        saying the cub was not signed out.
+
+        """
+        pass
+
+    def test_autocompletion(self):
+        """When the user starts typing in the cub name textbox, it should
+        start autocompleting the name.
+
+        """
+        pass
+
+
+def SettingsTests(BaseTest):
+    def test_proper_title(self):
+        """The page title should be "Carlton Cubs Attendance - Settings"
+
+        """
+        pass
+
+    def test_proper_header_text(self):
+        """The page header should contain "Settings"."""
+        pass
+
+    def test_failed_validation(self):
+        """When validation fails the user should be notified with snackbars
+        for each validation failure.
+
+        """
+        pass
+
+    def test_passed_validation(self):
+        """When validation passes, the data should be submitted to the API."""
+        pass
+
+    def test_successful_submission(self):
+        """When the settings are successfully submitted, the user should be
+        notified by a snackbar.
+
+        """
+        pass
+
+    def test_failed_submission(self):
+        """When sthe settings fail to be submitted, the user should be
+        notified by a snackbar.
+
+        """
+        pass
+
+    def test_successful_autofill(self):
+        """When the server responds with previous settings they should be fill
+        into the fields and the user notified with a snackbar.
+
+        """
+        pass
+
+    def test_failed_autofill(self):
+        """When the server responds in failure to retreiving settings, the
+        user should be notified with a snackbar.
+
+        """
+        pass
+
+    def test_non_existant_autofill(self):
+        """When previous settings do not exist, the fields should not be
+        filled in and the user should not be notified.
+
+        """
+        pass
 
 
 def build_remote_drivers():
