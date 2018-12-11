@@ -25,9 +25,6 @@ export default class App extends Component {
     this.API_URL = process.env.REACT_APP_API_URL;
     this.GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
     this.DISABLE_AUTH = process.env.REACT_APP_DISABLE_AUTH;
-    console.log(this.API_URL);
-    console.log(this.GOOGLE_CLIENT_ID);
-    console.log(this.DISABLE_AUTH);
   }
 
   logout = () => {
