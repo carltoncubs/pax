@@ -18,7 +18,7 @@ class SignOutForm extends Component {
       nameOptions: []
     };
     this.validator = this.props.validator(this);
-    this.submitter = this.props.submitter;
+    this.submitter = this.props.submitter(this);
     this.autocompletion = this.props.autocompletion;
   }
 
@@ -35,10 +35,12 @@ class SignOutForm extends Component {
     if (this.validator()) {
       const { cubName } = this.state;
       const parentSignature = this.parentSignaturePad.signaturePad.toDataURL();
-      this.submitter("sign-in", {
+      this.submitter({
         cubName: cubName,
         parentSignature: parentSignature
-      });
+      })(`${cubName} was signed out`)(
+        `There was a problem signing ${cubName} out`
+      );
 
       this.setState({
         cubName: ""
