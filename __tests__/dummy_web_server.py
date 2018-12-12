@@ -16,48 +16,94 @@ Send a POST request::
 
 """
 from http.server import BaseHTTPRequestHandler, HTTPServer
-import socketserver 
+import socketserver
 import json
+import multiprocessing
 
-class DummyServer(BaseHTTPRequestHandler):
-    def _set_headers(self):
-        self.send_response(200)
-        self.send_header('Content-type', 'application/json')
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-        self.end_headers()
+MOST_RECENT_DATA = {}
 
-    def do_GET(self):
-        host, _ = self.client_address
-        # print('Request payload:', self.rfile.read())
-        self._set_headers()
-        self.wfile.write(json.dumps({"this": "that"}))
 
-    def do_HEAD(self):
-        host, _ = self.client_address
-        self._set_headers()
-        
-    def do_POST(self):
-        # print('Request payload:', self.rfile.read())
-        host, _ = self.client_address
-        self._set_headers()
-        self.wfile.write(json.dumps({"token": "dummy-token"}).encode())
-        # self.wfile.close()
+def _get_endpoint(url):
+    return url.split("/")[-1]
 
-    def do_OPTIONS(self):
-        host, _ = self.client_address
-        self._set_headers()
-        
-def run(server_class=HTTPServer, handler_class=DummyServer, port=8000):
-    server_address = ('', port)
-    httpd = server_class(server_address, handler_class)
-    print('Starting httpd...')
-    httpd.serve_forever()
+
+def make_dummy_handler(response_mappings, force_action):
+    get_mappings = response_mappings.get(
+        "GET",
+        {
+            "settings": {
+                "spreadsheetID": "",
+                "attendanceSheet": "",
+                "autocompleteSheet": "",
+            },
+            "names": {"names": ["name1", "name2", "name3"]},
+        },
+    )
+
+    class DummyRequestHandler(BaseHTTPRequestHandler):
+        def _set_headers(self):
+            self.send_response(200)
+            self.send_header("Content-type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header(
+                "Access-Control-Allow-Headers", "Content-Type, Authorization"
+            )
+            self.end_headers()
+
+        def do_GET(self):
+            if force_action == "FAIL":
+                self.send_error(500)
+            else:
+                self._set_headers()
+                self.wfile.write(
+                    json.dumps(get_mappings.get(_get_endpoint(self.path))).encode()
+                )
+
+        def do_HEAD(self):
+            if force_action == "FAIL":
+                self.send_error(500)
+            else:
+                self._set_headers()
+
+        def do_POST(self):
+            if force_action == "FAIL":
+                self.send_error(500)
+            else:
+                data = self.rfile.read(int(self.headers.get("content-length"))).decode(
+                    "utf-8"
+                )
+                self._set_headers()
+                MOST_RECENT_DATA = json.loads(data)
+
+        def do_OPTIONS(self):
+            self._set_headers()
+            print("Received options request")
+
+    return DummyRequestHandler
+
+
+class DummyServer:
+    def __init__(self, response_mappings={}, force_action=None):
+        self.response_mappings = response_mappings
+        self.force_action = force_action
+
+    def start(self):
+        server_address = ("", 8000)
+        handler_class = make_dummy_handler(self.response_mappings, self.force_action)
+        httpd = HTTPServer(server_address, handler_class)
+        self.server_proc = multiprocessing.Process(target=httpd.serve_forever)
+        self.server_proc.start()
+
+    def stop(self):
+        self.server_proc.terminate()
+
+    def received_data(self, data):
+        for k in data:
+            if MOST_RECENT_DATA.get(k) != data[k]:
+                return False
+        return True
+
 
 if __name__ == "__main__":
-    from sys import argv
-
-    if len(argv) == 2:
-        run(port=int(argv[1]))
-    else:
-        run()
+    srv = DummyServer()
+    srv.start()
