@@ -23,6 +23,7 @@ class Settings extends Component {
 
   componentDidMount() {
     this.settingsGetter();
+    document.title = `${document.title} - Settings`;
   }
 
   onSubmit = event => {

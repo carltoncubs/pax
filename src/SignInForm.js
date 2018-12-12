@@ -16,8 +16,8 @@ class SignInForm extends Component {
       nameOptions: [],
       prevPath: ""
     };
-    this.validator = this.props.validator(this, "sign-in");
-    this.submitter = this.props.submitter;
+    this.validator = this.props.validator(this);
+    this.submitter = this.props.submitter(this);
     this.autocompletion = this.props.autocompletion;
   }
 
@@ -26,21 +26,29 @@ class SignInForm extends Component {
     this.setState({
       nameOptions: opts
     });
+    document.title = `${document.title} - Sign In`;
   }
 
   onSubmit = event => {
     event.preventDefault();
     if (this.validator()) {
-      const { cubName, cubSignature, parentSignature } = this.state;
-      this.submitter(
-        {
-          cubName: cubName,
-          cubSignature: cubSignature,
-          parentSignature: parentSignature
-        },
-        `${cubName} is signed in`,
+      const { cubName } = this.state;
+      const cubSignature = this.cubSignaturePad.signaturePad.toDataURL();
+      const parentSignature = this.parentSignaturePad.signaturePad.toDataURL();
+      this.submitter({
+        cubName: cubName,
+        cubSignature: cubSignature,
+        parentSignature: parentSignature
+      })(`${cubName} is signed in`)(
         `There was a problem signing ${cubName} in`
       );
+
+      this.setState({
+        cubName: ""
+      });
+
+      this.cubSignaturePad.signaturePad.clear();
+      this.parentSignaturePad.signaturePad.clear();
     }
   };
 

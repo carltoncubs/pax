@@ -3,6 +3,10 @@ import React, { Component } from "react";
 import Header from "./Header.js";
 
 class Privacy extends Component {
+    componentDidMount() {
+	document.title = `${document.title} - Privacy`;
+    }
+
   render() {
     return (
       <div>

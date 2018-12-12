@@ -27,16 +27,24 @@ class SignOutForm extends Component {
     this.setState({
       nameOptions: opts
     });
+    document.title = `${document.title} - Sign Out`;
   }
 
   onSubmit = event => {
     event.preventDefault();
     if (this.validator()) {
-      const { cubName, parentSignature } = this.state;
+      const { cubName } = this.state;
+      const parentSignature = this.parentSignaturePad.signaturePad.toDataURL();
       this.submitter("sign-in", {
         cubName: cubName,
         parentSignature: parentSignature
       });
+
+      this.setState({
+        cubName: ""
+      });
+
+      this.parentSignaturePad.signaturePad.clear();
     }
   };
 
@@ -62,7 +70,6 @@ class SignOutForm extends Component {
           <Grid item xs={12}>
             <Grid container justify="center">
               <AutoCompleteTextBox
-                required
                 id="cubName"
                 label="Cub Name"
                 fullWidth
