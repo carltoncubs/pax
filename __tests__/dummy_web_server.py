@@ -107,7 +107,7 @@ class DummyServer:
 
     @property
     def last_request_data(self):
-        return self.msg_queue.get()
+        return self.msg_queue.get_nowait()
 
 
 if __name__ == "__main__":
