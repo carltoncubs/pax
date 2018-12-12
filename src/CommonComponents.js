@@ -20,7 +20,7 @@ export class SignaturePadWrapper extends Component {
     return (
       <div className="signaturePad">
         <SignaturePad
-          options={{ backgroundColor: "rgb(255,255,255)" }}
+          /* options={{ backgroundColor: "rgb(255,255,255)" }} */
           ref={ref => (this.signaturePad = ref)}
         />
       </div>
