@@ -7,7 +7,7 @@ ut_exit_code=0
 
 # Run integration tests
 if [[ "$to_run" == "integration" || "$to_run" == "all" ]]; then
-    npm start &>/dev/null &
+    npm start:test &>/dev/null &
     server_pid=$!
     pipenv run python integrationTests.py
     it_exit_code=$?
