@@ -16,18 +16,15 @@ Send a POST request::
 
 """
 from http.server import BaseHTTPRequestHandler, HTTPServer
-import socketserver
 import json
 import multiprocessing
-
-MOST_RECENT_DATA = {}
 
 
 def _get_endpoint(url):
     return url.split("/")[-1]
 
 
-def make_dummy_handler(response_mappings, force_action):
+def make_dummy_handler(response_mappings, force_action, queue):
     get_mappings = response_mappings.get(
         "GET",
         {
@@ -54,7 +51,11 @@ def make_dummy_handler(response_mappings, force_action):
             if force_action == "FAIL":
                 self.send_error(500)
             else:
+                data = self.rfile.read(int(self.headers.get("content-length"))).decode(
+                    "utf-8"
+                )
                 self._set_headers()
+                queue.put(json.loads(data))
                 self.wfile.write(
                     json.dumps(get_mappings.get(_get_endpoint(self.path))).encode()
                 )
@@ -73,11 +74,10 @@ def make_dummy_handler(response_mappings, force_action):
                     "utf-8"
                 )
                 self._set_headers()
-                MOST_RECENT_DATA = json.loads(data)
+                queue.put(json.loads(data))
 
         def do_OPTIONS(self):
             self._set_headers()
-            print("Received options request")
 
     return DummyRequestHandler
 
@@ -86,10 +86,18 @@ class DummyServer:
     def __init__(self, response_mappings={}, force_action=None):
         self.response_mappings = response_mappings
         self.force_action = force_action
+        self.msg_queue = multiprocessing.Queue()
 
     def start(self):
         server_address = ("", 8000)
-        handler_class = make_dummy_handler(self.response_mappings, self.force_action)
+
+        def setter(data):
+            print("Settings last request data")
+            self.last_request_data = data
+
+        handler_class = make_dummy_handler(
+            self.response_mappings, self.force_action, self.msg_queue
+        )
         httpd = HTTPServer(server_address, handler_class)
         self.server_proc = multiprocessing.Process(target=httpd.serve_forever)
         self.server_proc.start()
@@ -97,11 +105,9 @@ class DummyServer:
     def stop(self):
         self.server_proc.terminate()
 
-    def received_data(self, data):
-        for k in data:
-            if MOST_RECENT_DATA.get(k) != data[k]:
-                return False
-        return True
+    @property
+    def last_request_data(self):
+        return self.msg_queue.get()
 
 
 if __name__ == "__main__":
