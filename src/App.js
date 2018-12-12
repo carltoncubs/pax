@@ -7,10 +7,11 @@ import Root from "./Root";
 import Settings from "./Settings";
 import SignInForm from "./SignInForm";
 import SignOutForm from "./SignOutForm";
-// import config from "./config.json";
 import { BrowserRouter as Router, Route } from "react-router-dom";
+import { withSnackbar } from "notistack";
+import axios from "axios";
 
-export default class App extends Component {
+class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -135,24 +136,20 @@ export default class App extends Component {
     return isValidForm;
   };
 
-  submitter = baseURL => token => ctx => endpoint => data => successMsg => errorMsg => {
+  submitter = baseURL => token => endpoint => ctx => data => successMsg => errorMsg => {
     const { enqueueSnackbar } = ctx.props;
     data.timestamp = moment().format("HH:MM:SS");
     data.date = moment().format("YYYY-MM-DD");
 
-    const body = JSON.stringify(data);
-
-    const options = {
-      method: "POST",
-      body: body,
+    const instance = axios.create({
+      baseURL: `${baseURL}/v1/`,
       headers: {
         Authorization: `Bearer ${token}`
-      },
-      mode: "cors",
-      cache: "default"
-    };
+      }
+    });
 
-    fetch(`${baseURL}/v1/${endpoint}`, options)
+    instance
+      .post(`${endpoint}`, data)
       .then(resp => {
         enqueueSnackbar(successMsg, {
           variant: "success"
@@ -237,7 +234,7 @@ export default class App extends Component {
   }
 
   render() {
-    const submitter = this.submitter(this.API_URL, this.state.token);
+    const submitter = this.submitter(this.API_URL)(this.state.token);
 
     const signInSubmitter = submitter("sign-in");
     const signOutSubmitter = submitter("sign-out");
@@ -246,6 +243,10 @@ export default class App extends Component {
     const success = this.googleResponse;
     const error = this.onFailure;
     const onLogout = this.onGoogleLogout;
+
+    const SignInFormWithSnackbar = withSnackbar(SignInForm);
+    const SignOutFormWithSnackbar = withSnackbar(SignOutForm);
+    const SettingsWithSnackbar = withSnackbar(Settings);
     if (this.state.token || this.DISABLE_AUTH) {
       return (
         <Router>
@@ -255,7 +256,7 @@ export default class App extends Component {
               path="/sign-in"
               exact
               render={props => (
-                <SignInForm
+                <SignInFormWithSnackbar
                   {...props}
                   validator={this.signInValidator}
                   submitter={signInSubmitter}
@@ -263,7 +264,6 @@ export default class App extends Component {
                   email={this.state.user.email}
                   name={this.state.user.name}
                   token={this.state.token}
-                  enqueueSnackbar={this.props.enqueueSnackbar}
                   onLogout={onLogout}
                 />
               )}
@@ -272,7 +272,7 @@ export default class App extends Component {
               path="/sign-out"
               exact
               render={props => (
-                <SignOutForm
+                <SignOutFormWithSnackbar
                   {...props}
                   validator={this.signOutValidator}
                   submitter={signOutSubmitter}
@@ -280,7 +280,6 @@ export default class App extends Component {
                   email={this.state.user.email}
                   name={this.state.user.name}
                   token={this.state.token}
-                  enqueueSnackbar={this.props.enqueueSnackbar}
                   onLogout={resp => console.log(resp)}
                 />
               )}
@@ -289,7 +288,7 @@ export default class App extends Component {
               path="/settings"
               exact
               render={props => (
-                <Settings
+                <SettingsWithSnackbar
                   {...props}
                   validator={this.settingsValidator}
                   submitter={settingsSubmitter}
@@ -297,7 +296,6 @@ export default class App extends Component {
                   email={this.state.user.email}
                   name={this.state.user.name}
                   token={this.state.token}
-                  enqueueSnackbar={this.props.enqueueSnackbar}
                   onLogout={resp => console.log(resp)}
                 />
               )}
@@ -322,3 +320,5 @@ export default class App extends Component {
     );
   }
 }
+
+export default withSnackbar(App);
