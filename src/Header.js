@@ -4,7 +4,6 @@ import Email from "@material-ui/icons/Email";
 import PowerSettingNew from "@material-ui/icons/PowerSettingsNew";
 import IconButton from "@material-ui/core/IconButton";
 import ListItem from "@material-ui/core/ListItem";
-import MenuItem from "@material-ui/core/MenuItem";
 import List from "@material-ui/core/List";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
@@ -36,8 +35,15 @@ class Header extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      anchorEl: null
+      anchorEl: null,
+      menu: this.setupMenu()
     };
+  }
+
+  componentDidMount() {
+    this.setState({
+      menu: this.setupMenu()
+    });
   }
 
   handleMenu(event) {
@@ -48,20 +54,36 @@ class Header extends Component {
     this.setState({ anchorEl: null });
   }
 
-  render() {
-    const menu = [
-      ["Sign In", "/sign-in"],
-      ["Sign Out", "/sign-out"],
-      ["Settings", "/settings"],
-      ["Privacy", "/privacy"]
+  setupMenu() {
+    var menu = [
+      { name: "Sign In", href: "/sign-in" },
+      { name: "Sign Out", href: "/sign-out" },
+      { name: "Settings", href: "/settings" },
+      { name: "Privacy", href: "/privacy" }
     ];
+
+    for (var i = 0; i < menu.length; i++) {
+      menu[i].selected = menu[i].name === this.props.title;
+    }
+    return menu;
+  }
+
+  render() {
     const { classes } = this.props;
     return (
       <div className={classes.root}>
         <AppBar position="static">
           <Toolbar>
-            <TemporaryDrawer items={menu} className={classes.menuButton} />
-            <Typography variant="h4" color="inherit" className={classes.grow}>
+            <TemporaryDrawer
+              items={this.state.menu}
+              className={classes.menuButton}
+            />
+            <Typography
+              variant="h4"
+              color="inherit"
+              className={classes.grow}
+              id="header-title"
+            >
               {this.props.title}
             </Typography>
             {this.props.auth && (
@@ -110,11 +132,7 @@ class Header extends Component {
                     <GoogleLogout
                       onLogoutSuccess={this.props.onLogout}
                       render={props => (
-                        <ListItem
-                          id="logout-item"
-                          onClick={props.onClick}
-                          button
-                        >
+                        <ListItem id="logout" onClick={props.onClick} button>
                           <ListItemIcon>
                             <PowerSettingNew />
                           </ListItemIcon>
