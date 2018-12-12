@@ -17,8 +17,7 @@ export class TemporaryDrawer extends Component {
 
   toggleDrawer() {
     this.setState({
-      isOpen: !this.state.isOpen,
-      items: this.state.items
+      isOpen: !this.state.isOpen
     });
   }
 
@@ -26,8 +25,15 @@ export class TemporaryDrawer extends Component {
     const list = (
       <List>
         {this.state.items.map(item => (
-          <ListItem button key={item[1]} component="a" href={item[1]}>
-            <ListItemText primary={item[0]} className="black-text" />
+          <ListItem
+            button
+            key={item.href}
+            component="a"
+            href={item.href}
+            selected={item.selected}
+            id={item.selected ? "current" : ""}
+          >
+            <ListItemText primary={item.name} className="black-text" />
           </ListItem>
         ))}
       </List>
