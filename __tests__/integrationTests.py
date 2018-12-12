@@ -459,36 +459,125 @@ def SettingsTests(BaseTest):
         """The page title should be "Carlton Cubs Attendance - Settings"
 
         """
-        pass
+        self.start_server()
+        for driver in self.drivers:
+            driver.get("http://localhost:3000/settings")
+            self.assertEqual(driver.title, "Carlton Cubs Attendance - Settings")
 
     def test_proper_header_text(self):
         """The page header should contain "Settings"."""
-        pass
+        self.start_server()
+        for driver in self.drivers:
+            driver.get("http://localhost:3000/settings")
+            title = driver.find_element_by_id("header-title")
+            self.assertEqual(title.text, "Settings")
 
     def test_failed_validation(self):
         """When validation fails the user should be notified with snackbars
         for each validation failure.
 
         """
-        pass
+        self.start_server()
+        for driver in self.drivers:
+            driver.get("http://localhost:3000/settings")
+            submit = driver.find_element_by_class_name("submitButton")
+            submit.click()
+            snackbars = driver.find_elements_by_class_name("error-notification")
+            self.assertEqual(len(snackbars), 2)
+
+            driver.get("http://localhost:3000/settings")
+            cub_name_txt = driver.find_element_by_id("spreadsheetId")
+            cub_name_txt.send_keys("spreadsheet")
+            submit = driver.find_element_by_class_name("submitButton")
+            submit.click()
+            snackbars = driver.find_elements_by_class_name("error-notification")
+            self.assertEqual(len(snackbars), 1)
 
     def test_passed_validation(self):
         """When validation passes, the data should be submitted to the API."""
-        pass
+        self.start_server()
+        for driver in self.drivers:
+            driver.get("http://localhost:3000/settings")
+            spreadsheet_id_txt = driver.find_element_by_id("spreadsheetId")
+            spreadsheet_id_txt.send_keys("spreadsheetId")
+
+            attendance_txt = driver.find_element_by_id("attendanceSheet")
+            attendance_txt.send_keys("attendance")
+
+            submit = driver.find_element_by_class_name("submitButton")
+            submit.click()
+
+            data = self.server.last_request_data
+
+            self.assertNotEqual(data["spreadsheetId"], None)
+            self.assertNotEqual(data["attendanceSheet"], None)
+
+            driver.get("http://localhost:3000/settings")
+            spreadsheet_id_txt = driver.find_element_by_id("spreadsheetId")
+            spreadsheet_id_txt.send_keys("spreadsheetId")
+
+            attendance_txt = driver.find_element_by_id("attendanceSheet")
+            attendance_txt.send_keys("attendance")
+
+            autocomplete_txt = driver.find_element_by_id("autocompleteSheet")
+            autocomplete_txt.send_keys("autocomplete")
+
+            submit = driver.find_element_by_class_name("submitButton")
+            submit.click()
+
+            data = self.server.last_request_data
+
+            self.assertNotEqual(data["spreadsheetId"], None)
+            self.assertNotEqual(data["attendanceSheet"], None)
+            self.assertNotEqual(data["autocompleteSheet"], None)
 
     def test_successful_submission(self):
         """When the settings are successfully submitted, the user should be
         notified by a snackbar.
 
         """
-        pass
+        self.start_server(force_action="SUCCESS")
+        for driver in self.drivers:
+            driver.get("http://localhost:3000/settings")
+
+            spreadsheet_id_txt = driver.find_element_by_id("spreadsheetId")
+            spreadsheet_id_txt.send_keys("spreadsheetId")
+
+            attendance_txt = driver.find_element_by_id("attendanceSheet")
+            attendance_txt.send_keys("attendance")
+
+            autocomplete_txt = driver.find_element_by_id("autocompleteSheet")
+            autocomplete_txt.send_keys("autocomplete")
+
+            submit = driver.find_element_by_class_name("submitButton")
+            submit.click()
+
+            snackbars = driver.find_elements_by_class_name("success-notification")
+            self.assertEqual(len(snackbars), 1)
 
     def test_failed_submission(self):
         """When sthe settings fail to be submitted, the user should be
         notified by a snackbar.
 
         """
-        pass
+        self.start_server(force_action="FAIL")
+        for driver in self.drivers:
+            driver.get("http://localhost:3000/settings")
+
+            spreadsheet_id_txt = driver.find_element_by_id("spreadsheetId")
+            spreadsheet_id_txt.send_keys("spreadsheetId")
+
+            attendance_txt = driver.find_element_by_id("attendanceSheet")
+            attendance_txt.send_keys("attendance")
+
+            autocomplete_txt = driver.find_element_by_id("autocompleteSheet")
+            autocomplete_txt.send_keys("autocomplete")
+
+            submit = driver.find_element_by_class_name("submitButton")
+            submit.click()
+
+            snackbars = driver.find_elements_by_class_name("error-notification")
+            self.assertEqual(len(snackbars), 1)
 
     def test_successful_autofill(self):
         """When the server responds with previous settings they should be fill
@@ -500,13 +589,6 @@ def SettingsTests(BaseTest):
     def test_failed_autofill(self):
         """When the server responds in failure to retreiving settings, the
         user should be notified with a snackbar.
-
-        """
-        pass
-
-    def test_non_existant_autofill(self):
-        """When previous settings do not exist, the fields should not be
-        filled in and the user should not be notified.
 
         """
         pass
