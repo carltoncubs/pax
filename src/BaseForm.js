@@ -10,6 +10,7 @@ export default class BaseForm extends Component {
           user={this.props.name}
           email={this.props.email}
           auth={this.props.auth}
+          onLogout={this.props.onLogout}
         />
 
         <form

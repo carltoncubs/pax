@@ -1,7 +1,6 @@
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
 import Icon from "@material-ui/core/Icon";
-import { withSnackbar } from "notistack";
 import React, { Component } from "react";
 
 import BaseForm from "./BaseForm";
@@ -54,6 +53,7 @@ class SignOutForm extends Component {
         name={this.props.name}
         email={this.props.email}
         onSubmit={this.onSubmit}
+        onLogout={this.props.onLogout}
         autoComplete="off"
         noValidate
         auth

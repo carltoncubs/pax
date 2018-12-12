@@ -35,6 +35,7 @@ export class TemporaryDrawer extends Component {
     return (
       <div>
         <IconButton
+          id="navmenu-button"
           color="inherit"
           aria-label="Menu"
           onClick={() => this.toggleDrawer()}
@@ -45,6 +46,7 @@ export class TemporaryDrawer extends Component {
           open={this.state.isOpen}
           onClose={() => this.toggleDrawer()}
           onKeyDown={() => this.toggleDrawer()}
+          id="navmenu-drawer"
         >
           {list}
         </Drawer>

@@ -1,8 +1,11 @@
 import AccountCircle from "@material-ui/icons/AccountCircle";
 import AppBar from "@material-ui/core/AppBar";
 import Email from "@material-ui/icons/Email";
+import PowerSettingNew from "@material-ui/icons/PowerSettingsNew";
 import IconButton from "@material-ui/core/IconButton";
 import ListItem from "@material-ui/core/ListItem";
+import MenuItem from "@material-ui/core/MenuItem";
+import List from "@material-ui/core/List";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import Person from "@material-ui/icons/Person";
@@ -12,6 +15,7 @@ import Typography from "@material-ui/core/Typography";
 import PropTypes from "prop-types";
 import React, { Component } from "react";
 import { withStyles } from "@material-ui/core/styles";
+import { GoogleLogout } from "react-google-login";
 
 import { TemporaryDrawer } from "./TemporaryDrawer.js";
 
@@ -69,6 +73,7 @@ class Header extends Component {
                   aria-owns={
                     Boolean(this.state.anchorEl) ? "menu-appbar" : undefined
                   }
+                  id="auth-button"
                 >
                   <AccountCircle />
                 </IconButton>
@@ -86,18 +91,38 @@ class Header extends Component {
                   open={Boolean(this.state.anchorEl)}
                   onClose={() => this.handleClose()}
                 >
-                  <ListItem>
-                    <ListItemIcon>
-                      <Person />
-                    </ListItemIcon>
-                    <ListItemText primary={this.props.user} />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemIcon>
-                      <Email />
-                    </ListItemIcon>
-                    <ListItemText primary={this.props.email} />
-                  </ListItem>
+                  <List id="user-info-list">
+                    <ListItem id={this.props.user}>
+                      <ListItemIcon>
+                        <Person />
+                      </ListItemIcon>
+                      <ListItemText primary={this.props.user} id="user-name" />
+                    </ListItem>
+                    <ListItem id={this.props.email}>
+                      <ListItemIcon>
+                        <Email />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={this.props.email}
+                        id="user-email"
+                      />
+                    </ListItem>
+                    <GoogleLogout
+                      onLogoutSuccess={this.props.onLogout}
+                      render={props => (
+                        <ListItem
+                          id="logout-item"
+                          onClick={props.onClick}
+                          button
+                        >
+                          <ListItemIcon>
+                            <PowerSettingNew />
+                          </ListItemIcon>
+                          <ListItemText>Logout</ListItemText>
+                        </ListItem>
+                      )}
+                    />
+                  </List>
                 </Popover>
               </div>
             )}

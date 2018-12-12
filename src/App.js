@@ -216,6 +216,17 @@ export default class App extends Component {
     return [];
   };
 
+  onGoogleLogout = () => {
+    this.setState({
+      isAuthenticated: false,
+      user: {
+        email: "",
+        name: ""
+      },
+      token: ""
+    });
+  };
+
   componentDidMount() {
     const token = sessionStorage.getItem("token");
     if (!!token) {
@@ -234,6 +245,7 @@ export default class App extends Component {
     const clientId = this.GOOGLE_CLIENT_ID;
     const success = this.googleResponse;
     const error = this.onFailure;
+    const onLogout = this.onGoogleLogout;
     if (this.state.token || this.DISABLE_AUTH) {
       return (
         <Router>
@@ -252,6 +264,7 @@ export default class App extends Component {
                   name={this.state.user.name}
                   token={this.state.token}
                   enqueueSnackbar={this.props.enqueueSnackbar}
+                  onLogout={onLogout}
                 />
               )}
             />
@@ -268,6 +281,7 @@ export default class App extends Component {
                   name={this.state.user.name}
                   token={this.state.token}
                   enqueueSnackbar={this.props.enqueueSnackbar}
+                  onLogout={resp => console.log(resp)}
                 />
               )}
             />
@@ -284,6 +298,7 @@ export default class App extends Component {
                   name={this.state.user.name}
                   token={this.state.token}
                   enqueueSnackbar={this.props.enqueueSnackbar}
+                  onLogout={resp => console.log(resp)}
                 />
               )}
             />

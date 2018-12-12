@@ -3,7 +3,6 @@ import Grid from "@material-ui/core/Grid";
 import Icon from "@material-ui/core/Icon";
 import TextField from "@material-ui/core/TextField";
 import Typography from "@material-ui/core/Typography";
-import { withSnackbar } from "notistack";
 import React, { Component } from "react";
 import { makeStyles } from "@material-ui/styles";
 
@@ -61,6 +60,7 @@ class Settings extends Component {
         name={this.props.name}
         email={this.props.email}
         onSubmit={this.onSubmit}
+        onLogout={this.props.onLogout}
         autoComplete="off"
         noValidate
         auth
