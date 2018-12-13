@@ -1,0 +1,35 @@
+FROM node:current
+
+WORKDIR /app
+
+ENV PIPENV_PIPFILE /app/__tests__/Pipfile
+ENV LC_ALL C.UTF-8
+ENV LANG C.UTF-8
+
+RUN apt-get update && apt-get install -y python3 python3-pip
+
+RUN pip3 install pipenv
+
+# RUN mkdir -p /app/__tests__/setup
+# RUN mkdir /app/{public,scripts,config}
+
+COPY ./__tests__/setup /app/__tests__/setup
+COPY ./__tests__/run_tests.sh /app/__tests__/run_tests.sh
+
+COPY ./__tests__/Pipfile /app/__tests__/Pipfile
+COPY ./__tests__/Pipfile.lock /app/__tests__/Pipfile.lock
+COPY ./__tests__/*.py /app/__tests__/
+
+COPY ./__tests__/unitTests.js /app/__tests__/unitTests.js
+
+RUN pipenv install --system --ignore-pipfile --deploy
+
+COPY ./public/ /app/public
+COPY ./scripts /app/scripts
+COPY ./config /app/config
+
+COPY ./package.json /app/package.json
+COPY ./package-lock.json /app/package-lock.json
+COPY ./src/ /app/src
+
+RUN npm install
