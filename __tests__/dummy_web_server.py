@@ -51,11 +51,11 @@ def make_dummy_handler(response_mappings, force_action, queue):
             if force_action == "FAIL":
                 self.send_error(500)
             else:
-                data = self.rfile.read(int(self.headers.get("content-length"))).decode(
-                    "utf-8"
-                )
+                # data = self.rfile.read(int(self.headers.get("content-length"))).decode(
+                #     "utf-8"
+                # )
+                # queue.put(json.loads(data))
                 self._set_headers()
-                queue.put(json.loads(data))
                 self.wfile.write(
                     json.dumps(get_mappings.get(_get_endpoint(self.path))).encode()
                 )
