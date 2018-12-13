@@ -21,8 +21,6 @@ from selenium.webdriver.common.action_chains import ActionChains
 
 from dummy_web_server import DummyServer
 
-EXPECTED_DATA_URI = """data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAaIAAADRCAYAAACOyra0AAADAElEQVR4nO3drW5UURQF4PUI8wadJyA8AITRfQGQI3gALA6PqcCQIEbhMCgctaiSNHWtAIOj/AREEUXQhtBz9N0h+/uSa0Ytt7Ln7nNPAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADA/2yT5F51CAB6epfk8uo5Lc4CQDOb/C2h6+dFZSAAenmQsYh+JdmrDAVAL18yltFhZSAAermfsYguk9ypDAVAL0cZi+hHaSIA2plNRa9KEwHQyrPMy8jiAgCL+ZmxiJwtAmAxDzOfivYrQwHQy1nGIvpemgiAVm5lPhU9rgwFQC/PMxbR19JEALTzOaYiAAqtklzk3yK6uPodABbxKONUdFyaCIB2jjOW0e3SRAC0cjdjEb0tTQRAOwcZy2hbGQiAXlYZ7y36EIsLACxotriwqwwEQD8fY3EBgEKzxYXzKCMAFjRbXDiJ90UALOh9xjJ6U5oIgFZWSb7F+yIACu3HQVcAis3eF20qAwHQyzrjQVdTEQCLmk1F3hUBsJh1xiI6LMwDQEMvM5aRc0UALGYvvkMHQLFdbNABUGgd54oAKOZcEQClZhfonZQmAqCd13GuCIBCszuLdpWBAOjn5jUR57VxAOhmG0sLABRaZyyig8pAAPRz8++5T7VxAOjmaWzPAVBotj33pDIQAP3YngOg1DbjVLQtzANAM6u4NA+AYrv4ygIAhVb5MwVdT0NubgUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABr4DaGH+jNwIkr6AAAAAElFTkSuQmCC"""
-
 
 def draw_on_canvas(driver, canvas):
     """Draw on a canvas."""
@@ -102,34 +100,39 @@ class NavMenuTests(BaseTest):
         """
         self.start_server()
         for driver in self.drivers:
+            # for endpoint, name in (
+            #     ("sign-in", "Sign In"),
+            #     ("sign-out", "Sign Out"),
+            #     ("settings", "Settings"),
+            #     ("privacy", "Privacy"),
+            # ):
+            endpoint = "sign-in"
+            name = "Sign In"
             wait = WebDriverWait(driver, 10)
-            for endpoint, name in (
-                ("sign-in", "Sign In"),
-                ("sign-out", "Sign Out"),
-                ("settings", "Settings"),
-                ("privacy", "Privacy"),
-            ):
-                driver.get(f"http://localhost:3000/{endpoint}")
-                button = driver.find_element_by_id("navmenu-button")
-                button.click()
-                current = wait.until(EC.element_to_be_clickable((By.ID, "current")))
-                self.assertEqual(current.text, name)
+            driver.get(f"http://localhost:3000/{endpoint}")
+            button = driver.find_element_by_id("navmenu-button")
+            button.click()
+            current = wait.until(EC.element_to_be_clickable((By.ID, "current")))
+            self.assertEqual(current.text, name)
         self.stop_server()
 
     def test_display_links_to_all_pages(self):
         """The navigation menu should display links to all pages."""
         self.start_server()
         for driver in self.drivers:
-            endpoints = ("sign-in", "sign-out", "settings", "privacy")
+            # endpoints = ("sign-in", "sign-out", "settings", "privacy")
             item_names = sorted(("Sign In", "Sign Out", "Settings", "Privacy"))
-            for endpoint in endpoints:
-                driver.get(f"http://localhost:3000/{endpoint}")
-                button = driver.find_element_by_id("navmenu-button")
-                button.click()
-                drawer = driver.find_element_by_id("navmenu-drawer")
-                item_list = drawer.find_element_by_tag_name("ul")
-                items = item_list.find_elements_by_tag_name("a")
-                self.assertEqual(sorted([item.text for item in items]), item_names)
+            # for endpoint in endpoints:
+            endpoint = "sign-in"
+            driver.get(f"http://localhost:3000/{endpoint}")
+            wait = WebDriverWait(driver, 10)
+            wait.until(EC.element_to_be_clickable((By.ID, "navmenu-button"))).click()
+            drawer = wait.until(
+                EC.presence_of_element_located((By.ID, "navmenu-drawer"))
+            )
+            item_list = drawer.find_element_by_tag_name("ul")
+            items = item_list.find_elements_by_tag_name("a")
+            self.assertEqual(sorted([item.text for item in items]), item_names)
         self.stop_server()
 
 
@@ -197,7 +200,12 @@ class SignInTests(BaseTest):
         self.start_server()
         for driver in self.drivers:
             driver.get("http://localhost:3000/sign-in")
-            cub_name_txt = driver.find_element_by_id("cubName")
+
+            wait = WebDriverWait(driver, 10)
+
+            cub_name_txt = wait.until(
+                EC.presence_of_element_located((By.ID, "cubName"))
+            )
             cub_name_txt.send_keys("Cub Name")
             cub_sig_pad = driver.find_element_by_class_name("signaturePad")
             draw_on_canvas(driver, cub_sig_pad.find_element_by_tag_name("canvas"))
@@ -206,6 +214,8 @@ class SignInTests(BaseTest):
 
             submit = driver.find_element_by_class_name("submitButton")
             submit.click()
+
+            time.sleep(10)
 
             data = self.server.last_request_data
 
@@ -601,19 +611,51 @@ def build_remote_drivers():
     platforms on BrowserStack.
 
     """
+    project = "Cub Attendance"
     username = os.getenv("BROWSERSTACK_USERNAME")
-    password = os.getenv("BROWSERSTACK_PASSWORD")
-    desired_cap = {
-        "browserName": "iPhone",
-        "device": "iPhone 8 Plus",
-        "realMobile": "true",
-        "os_version": "11.0",
-    }
-    driver = webdriver.Remote(
-        command_executor=f"http://{username}:{password}@hub.browserstack.com:80/wd/hub",
-        desired_capabilities=desired_cap,
-    )
-    return [driver]
+    access_key = os.getenv("BROWSERSTACK_ACCESS_KEY")
+    desired_caps = [
+        {
+            "project": project,
+            "browserName": "iPad",
+            "device": "iPad 6th",
+            "realMobile": "true",
+            "os_version": "11.3",
+            "browserstack.local": os.getenv("BROWSERSTACK_LOCAL"),
+            "browserstack.localIdentifier": os.getenv("BROWSERSTACK_LOCAL_IDENTIFIER"),
+        },
+        {
+            "project": project,
+            "browserName": "iPad",
+            "device": "iPad 5th",
+            "realMobile": "true",
+            "os_version": "11.0",
+            "browserstack.local": os.getenv("BROWSERSTACK_LOCAL"),
+            "browserstack.localIdentifier": os.getenv("BROWSERSTACK_LOCAL_IDENTIFIER"),
+        },
+        {
+            "project": project,
+            "device": "iPad 6th",
+            "browser": "chrome",
+            "browserstack.local": os.getenv("BROWSERSTACK_LOCAL"),
+            "browserstack.localIdentifier": os.getenv("BROWSERSTACK_LOCAL_IDENTIFIER"),
+        },
+        {
+            "project": project,
+            "device": "iPad 5th",
+            "browser": "chrome",
+            "browserstack.local": os.getenv("BROWSERSTACK_LOCAL"),
+            "browserstack.localIdentifier": os.getenv("BROWSERSTACK_LOCAL_IDENTIFIER"),
+        },
+    ]
+
+    def build_remote_driver(desired_capabilities):
+        return webdriver.Remote(
+            command_executor=f"http://{username}:{access_key}@hub.browserstack.com:80/wd/hub",
+            desired_capabilities=desired_capabilities,
+        )
+
+    return [build_remote_driver(desired_cap) for desired_cap in desired_caps]
 
 
 def build_drivers():
@@ -623,14 +665,15 @@ def build_drivers():
 
     """
     firefox = webdriver.Firefox()
+    firefox.implicitly_wait(3)
     chrome = webdriver.Chrome()
+    chrome.implicitly_wait(3)
     return [firefox, chrome]
 
 
 def main(use_browserstack):
     BaseTest.USE_BROWSERSTACK = use_browserstack
     loader = unittest.defaultTestLoader
-    # suite = loader.loadTestsFromTestCase(SignInTests)
     suite = loader.loadTestsFromName(__name__)
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
