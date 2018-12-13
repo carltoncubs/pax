@@ -2,7 +2,6 @@ pipeline {
     agent {
 	dockerfile {
 	    filename 'docker/Dockerfile.test'
-	    label 'cub-attendance-frontend-testing'
 	}
     }
     stages {
