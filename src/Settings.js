@@ -17,7 +17,7 @@ class Settings extends Component {
       autocompleteSheet: ""
     };
     this.validator = this.props.validator(this);
-    this.submitter = this.props.submitter;
+    this.submitter = this.props.submitter(this);
     this.settingsGetter = this.props.settingsGetter(this);
   }
 
@@ -30,11 +30,11 @@ class Settings extends Component {
     event.preventDefault();
     if (this.validator()) {
       const { spreadsheetId, attendanceSheet, autocompleteSheet } = this.state;
-      this.submitter("sign-in", {
+      this.submitter({
         spreadsheetId: spreadsheetId,
         attendanceSheet: attendanceSheet,
         autocompleteSheet: autocompleteSheet
-      });
+      })("Settings submitter")("There was a problem submitting the settings");
     }
   };
 
