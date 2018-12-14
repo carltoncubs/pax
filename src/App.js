@@ -138,7 +138,7 @@ class App extends Component {
 
   submitter = baseURL => token => endpoint => ctx => data => successMsg => errorMsg => {
     const { enqueueSnackbar } = ctx.props;
-    data.timestamp = moment().format("HH:MM:SS");
+    data.time = moment().format("hh:mm:ss");
     data.date = moment().format("YYYY-MM-DD");
 
     const instance = axios.create({
@@ -176,11 +176,11 @@ class App extends Component {
     fetch(`${this.API_URL}/v1/settings`, options)
       .then(resp => {
         if (resp.ok) {
-          const { enqueueSnackbar } = this.props;
+          const { enqueueSnackbar } = ctx.props;
           resp
             .json()
             .then(json => {
-              this.setState({
+              ctx.setState({
                 spreadsheetId: json.spreadsheetId ? json.spreadsheetId : "",
                 attendanceSheet: json.attendanceSheet
                   ? json.attendanceSheet
@@ -189,6 +189,7 @@ class App extends Component {
                   ? json.autocompleteSheet
                   : ""
               });
+              console.log(ctx.state);
             })
             .catch(error => {
               console.error(error);
@@ -247,7 +248,7 @@ class App extends Component {
     const SignInFormWithSnackbar = withSnackbar(SignInForm);
     const SignOutFormWithSnackbar = withSnackbar(SignOutForm);
     const SettingsWithSnackbar = withSnackbar(Settings);
-    if (this.state.token || this.DISABLE_AUTH) {
+    if (!!this.state.token && !this.DISABLE_AUTH) {
       return (
         <Router>
           <div>
@@ -311,7 +312,7 @@ class App extends Component {
         onSuccess={success}
         onFailure={error}
         offline={false}
-        approvalPrompt="force"
+        // approvalPrompt="force"
         responseType="id_token"
         isSignedIn
         theme="dark"
