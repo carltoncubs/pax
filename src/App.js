@@ -9,7 +9,6 @@ import SignInForm from "./SignInForm";
 import SignOutForm from "./SignOutForm";
 import { BrowserRouter as Router, Route } from "react-router-dom";
 import { withSnackbar } from "notistack";
-import axios from "axios";
 
 class App extends Component {
   constructor(props) {
@@ -141,25 +140,24 @@ class App extends Component {
     data.time = moment().format("hh:mm:ss");
     data.date = moment().format("YYYY-MM-DD");
 
-    const instance = axios.create({
-      baseURL: `${baseURL}/v1/`,
+    const tokenBlob = JSON.stringify(data);
+
+    const options = {
+      method: "POST",
+      body: tokenBlob,
+      mode: "cors",
+      cache: "default",
       headers: {
         Authorization: `Bearer ${token}`
       }
-    });
+    };
 
-    instance
-      .post(`${endpoint}`, data)
+    fetch(`${baseURL}/v1/${endpoint}`, options)
       .then(resp => {
-        enqueueSnackbar(successMsg, {
-          variant: "success"
-        });
+        enqueueSnackbar(successMsg, { variant: "success" });
       })
       .catch(error => {
-        console.error(error);
-        enqueueSnackbar(errorMsg, {
-          variant: "error"
-        });
+        enqueueSnackbar(errorMsg, { variant: "error" });
       });
   };
 
@@ -247,7 +245,7 @@ class App extends Component {
     const SignInFormWithSnackbar = withSnackbar(SignInForm);
     const SignOutFormWithSnackbar = withSnackbar(SignOutForm);
     const SettingsWithSnackbar = withSnackbar(Settings);
-    if (!!this.state.token && !this.DISABLE_AUTH) {
+    if (!!this.state.token || this.DISABLE_AUTH) {
       return (
         <Router>
           <div>
@@ -304,7 +302,7 @@ class App extends Component {
               path="/privacy"
               exact
               render={props => (
-                  <Privacy
+                <Privacy
                   {...props}
                   component={Privacy}
                   email={this.state.user.email}
