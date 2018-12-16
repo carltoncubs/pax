@@ -18,6 +18,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.chrome.options import Options as ChromeOptions
 
 from dummy_web_server import DummyServer
 
@@ -37,13 +39,16 @@ def draw_on_canvas(driver, canvas):
 
 class BaseTest(unittest.TestCase):
     USE_BROWSERSTACK = False
+    SERVER_PORT = 8000
+    HEADLESS = False
+    CLIENT_PORT = 3000
 
     @classmethod
     def setUpClass(cls):
         if cls.USE_BROWSERSTACK:
             cls.drivers = build_remote_drivers()
         else:
-            cls.drivers = build_drivers()
+            cls.drivers = build_drivers(cls.HEADLESS)
 
     @classmethod
     def tearDownClass(cls):
@@ -54,7 +59,9 @@ class BaseTest(unittest.TestCase):
         self.stop_server()
 
     def start_server(self, response_mappings={}, force_action=None):
-        self.server = DummyServer(response_mappings, force_action)
+        self.server = DummyServer(
+            response_mappings, force_action, port=self.SERVER_PORT
+        )
         self.server.start()
 
     def stop_server(self):
@@ -63,13 +70,16 @@ class BaseTest(unittest.TestCase):
         # the OS
         time.sleep(2)
 
+    def build_url(self, endpoint):
+        return f"http://localhost:{self.CLIENT_PORT}/{endpoint}"
+
 
 class HeaderTests(BaseTest):
     def test_press_hamburger(self):
         """Pressing the hamburger button should open the navigation menu."""
         self.start_server()
         for driver in self.drivers:
-            driver.get("http://localhost:3000/sign-in")
+            driver.get(self.build_url("sign-in"))
             button = driver.find_element_by_id("navmenu-button")
             button.click()
             driver.find_element_by_id("navmenu-drawer")
@@ -82,7 +92,7 @@ class HeaderTests(BaseTest):
         """
         self.start_server()
         for driver in self.drivers:
-            driver.get("http://localhost:3000/sign-in")
+            driver.get(self.build_url("sign-in"))
             auth_circle = driver.find_element_by_id("auth-button")
             auth_circle.click()
             info_list = driver.find_element_by_id("user-info-list")
@@ -109,7 +119,7 @@ class NavMenuTests(BaseTest):
             endpoint = "sign-in"
             name = "Sign In"
             wait = WebDriverWait(driver, 10)
-            driver.get(f"http://localhost:3000/{endpoint}")
+            driver.get(self.build_url(endpoint))
             button = driver.find_element_by_id("navmenu-button")
             button.click()
             current = wait.until(EC.element_to_be_clickable((By.ID, "current")))
@@ -124,7 +134,7 @@ class NavMenuTests(BaseTest):
             item_names = sorted(("Sign In", "Sign Out", "Settings", "Privacy"))
             # for endpoint in endpoints:
             endpoint = "sign-in"
-            driver.get(f"http://localhost:3000/{endpoint}")
+            driver.get(self.build_url(endpoint))
             wait = WebDriverWait(driver, 10)
             wait.until(EC.element_to_be_clickable((By.ID, "navmenu-button"))).click()
             drawer = wait.until(
@@ -137,6 +147,10 @@ class NavMenuTests(BaseTest):
 
 
 class SignInTests(BaseTest):
+    def setUp(self):
+        super().setUp()
+        self.url = self.build_url("sign-in")
+
     def tearDown(self):
         self.stop_server()
 
@@ -147,7 +161,7 @@ class SignInTests(BaseTest):
         """
         self.start_server()
         for driver in self.drivers:
-            driver.get("http://localhost:3000/sign-in")
+            driver.get(self.url)
             self.assertEqual(driver.title, "Carlton Cubs Attendance - Sign In")
         # self.stop_server()
 
@@ -155,7 +169,7 @@ class SignInTests(BaseTest):
         """On the sign in page, the header should display "Sign In"."""
         self.start_server()
         for driver in self.drivers:
-            driver.get("http://localhost:3000/sign-in")
+            driver.get(self.url)
             title = driver.find_element_by_id("header-title")
             self.assertEqual(title.text, "Sign In")
         # self.stop_server()
@@ -166,13 +180,13 @@ class SignInTests(BaseTest):
         """
         self.start_server()
         for driver in self.drivers:
-            driver.get("http://localhost:3000/sign-in")
+            driver.get(self.url)
             submit = driver.find_element_by_class_name("submitButton")
             submit.click()
             snackbars = driver.find_elements_by_class_name("error-notification")
             self.assertEqual(len(snackbars), 3)
 
-            driver.get("http://localhost:3000/sign-in")
+            driver.get(self.url)
             cub_name_txt = driver.find_element_by_id("cubName")
             cub_name_txt.send_keys("Cub Name")
             submit = driver.find_element_by_class_name("submitButton")
@@ -180,7 +194,7 @@ class SignInTests(BaseTest):
             snackbars = driver.find_elements_by_class_name("error-notification")
             self.assertEqual(len(snackbars), 2)
 
-            driver.get("http://localhost:3000/sign-in")
+            driver.get(self.url)
             cub_name_txt = driver.find_element_by_id("cubName")
             cub_name_txt.send_keys("Cub Name")
             cub_sig_pad = driver.find_element_by_class_name("signaturePad")
@@ -199,7 +213,7 @@ class SignInTests(BaseTest):
         """
         self.start_server()
         for driver in self.drivers:
-            driver.get("http://localhost:3000/sign-in")
+            driver.get(self.url)
 
             wait = WebDriverWait(driver, 10)
 
@@ -232,7 +246,7 @@ class SignInTests(BaseTest):
         """
         self.start_server(force_action="SUCCESS")
         for driver in self.drivers:
-            driver.get("http://localhost:3000/sign-in")
+            driver.get(self.url)
             cub_name_txt = driver.find_element_by_id("cubName")
             cub_name_txt.send_keys("Cub Name")
             cub_sig_pad = driver.find_element_by_class_name("signaturePad")
@@ -254,7 +268,7 @@ class SignInTests(BaseTest):
         """
         self.start_server(force_action="FAIL")
         for driver in self.drivers:
-            driver.get("http://localhost:3000/sign-in")
+            driver.get(self.url)
             cub_name_txt = driver.find_element_by_id("cubName")
             cub_name_txt.send_keys("Cub Name")
             cub_sig_pad = driver.find_element_by_class_name("signaturePad")
@@ -272,7 +286,7 @@ class SignInTests(BaseTest):
     def test_form_cleared_on_successful_submission(self):
         self.start_server(force_action="SUCCESS")
         for driver in self.drivers:
-            driver.get("http://localhost:3000/sign-in")
+            driver.get(self.url)
             cub_name_txt = driver.find_element_by_id("cubName")
             cub_name_txt.send_keys("Cub Name")
             cub_sig_pad = driver.find_element_by_class_name("signaturePad")
@@ -324,6 +338,10 @@ return parent_sig_canvas.toDataURL() == blank.toDataURL();
 
 
 class SignOutTests(BaseTest):
+    def setUp(self):
+        super().setUp()
+        self.url = self.build_url("sign-out")
+
     def tearDown(self):
         self.stop_server()
 
@@ -334,7 +352,7 @@ class SignOutTests(BaseTest):
         """
         self.start_server()
         for driver in self.drivers:
-            driver.get("http://localhost:3000/sign-out")
+            driver.get(self.url)
             self.assertEqual(driver.title, "Carlton Cubs Attendance - Sign Out")
         self.stop_server()
 
@@ -342,7 +360,7 @@ class SignOutTests(BaseTest):
         """On the sign in page, the header should display "Sign Out"."""
         self.start_server()
         for driver in self.drivers:
-            driver.get("http://localhost:3000/sign-out")
+            driver.get(self.url)
             title = driver.find_element_by_id("header-title")
             self.assertEqual(title.text, "Sign Out")
         self.stop_server()
@@ -354,13 +372,13 @@ class SignOutTests(BaseTest):
         """
         self.start_server()
         for driver in self.drivers:
-            driver.get("http://localhost:3000/sign-out")
+            driver.get(self.url)
             submit = driver.find_element_by_class_name("submitButton")
             submit.click()
             snackbars = driver.find_elements_by_class_name("error-notification")
             self.assertEqual(len(snackbars), 2)
 
-            driver.get("http://localhost:3000/sign-out")
+            driver.get(self.url)
             cub_name_txt = driver.find_element_by_id("cubName")
             cub_name_txt.send_keys("Cub Name")
             submit = driver.find_element_by_class_name("submitButton")
@@ -376,7 +394,7 @@ class SignOutTests(BaseTest):
         """
         self.start_server()
         for driver in self.drivers:
-            driver.get("http://localhost:3000/sign-out")
+            driver.get(self.url)
             cub_name_txt = driver.find_element_by_id("cubName")
             cub_name_txt.send_keys("Cub Name")
             parent_sig_pad = driver.find_element_by_class_name("signaturePad")
@@ -396,7 +414,7 @@ class SignOutTests(BaseTest):
         """
         self.start_server(force_action="SUCCESS")
         for driver in self.drivers:
-            driver.get("http://localhost:3000/sign-out")
+            driver.get(self.url)
             cub_name_txt = driver.find_element_by_id("cubName")
             cub_name_txt.send_keys("Cub Name")
             parent_sig_pad = driver.find_element_by_class_name("signaturePad")
@@ -415,7 +433,7 @@ class SignOutTests(BaseTest):
         """
         self.start_server(force_action="FAIL")
         for driver in self.drivers:
-            driver.get("http://localhost:3000/sign-out")
+            driver.get(self.url)
             cub_name_txt = driver.find_element_by_id("cubName")
             cub_name_txt.send_keys("Cub Name")
             parent_sig_pad = driver.find_element_by_class_name("signaturePad")
@@ -430,7 +448,7 @@ class SignOutTests(BaseTest):
     def test_form_cleared_on_successful_submission(self):
         self.start_server(force_action="SUCCESS")
         for driver in self.drivers:
-            driver.get("http://localhost:3000/sign-out")
+            driver.get(self.url)
             cub_name_txt = driver.find_element_by_id("cubName")
             cub_name_txt.send_keys("Cub Name")
             parent_sig_pad = driver.find_element_by_class_name("signaturePad")
@@ -462,6 +480,10 @@ return parent_sig_canvas.toDataURL() == blank.toDataURL();
 
 
 def SettingsTests(BaseTest):
+    def setUp(self):
+        super().setUp()
+        self.url = self.build_url("settings")
+
     def tearDown(self):
         self.stop_server()
 
@@ -471,14 +493,14 @@ def SettingsTests(BaseTest):
         """
         self.start_server()
         for driver in self.drivers:
-            driver.get("http://localhost:3000/settings")
+            driver.get(self.url)
             self.assertEqual(driver.title, "Carlton Cubs Attendance - Settings")
 
     def test_proper_header_text(self):
         """The page header should contain "Settings"."""
         self.start_server()
         for driver in self.drivers:
-            driver.get("http://localhost:3000/settings")
+            driver.get(self.url)
             title = driver.find_element_by_id("header-title")
             self.assertEqual(title.text, "Settings")
 
@@ -489,13 +511,13 @@ def SettingsTests(BaseTest):
         """
         self.start_server()
         for driver in self.drivers:
-            driver.get("http://localhost:3000/settings")
+            driver.get(self.url)
             submit = driver.find_element_by_class_name("submitButton")
             submit.click()
             snackbars = driver.find_elements_by_class_name("error-notification")
             self.assertEqual(len(snackbars), 2)
 
-            driver.get("http://localhost:3000/settings")
+            driver.get(self.url)
             cub_name_txt = driver.find_element_by_id("spreadsheetId")
             cub_name_txt.send_keys("spreadsheet")
             submit = driver.find_element_by_class_name("submitButton")
@@ -507,7 +529,7 @@ def SettingsTests(BaseTest):
         """When validation passes, the data should be submitted to the API."""
         self.start_server()
         for driver in self.drivers:
-            driver.get("http://localhost:3000/settings")
+            driver.get(self.url)
             spreadsheet_id_txt = driver.find_element_by_id("spreadsheetId")
             spreadsheet_id_txt.send_keys("spreadsheetId")
 
@@ -522,7 +544,7 @@ def SettingsTests(BaseTest):
             self.assertNotEqual(data["spreadsheetId"], None)
             self.assertNotEqual(data["attendanceSheet"], None)
 
-            driver.get("http://localhost:3000/settings")
+            driver.get(self.url)
             spreadsheet_id_txt = driver.find_element_by_id("spreadsheetId")
             spreadsheet_id_txt.send_keys("spreadsheetId")
 
@@ -548,7 +570,7 @@ def SettingsTests(BaseTest):
         """
         self.start_server(force_action="SUCCESS")
         for driver in self.drivers:
-            driver.get("http://localhost:3000/settings")
+            driver.get(self.url)
 
             spreadsheet_id_txt = driver.find_element_by_id("spreadsheetId")
             spreadsheet_id_txt.send_keys("spreadsheetId")
@@ -572,7 +594,7 @@ def SettingsTests(BaseTest):
         """
         self.start_server(force_action="FAIL")
         for driver in self.drivers:
-            driver.get("http://localhost:3000/settings")
+            driver.get(self.url)
 
             spreadsheet_id_txt = driver.find_element_by_id("spreadsheetId")
             spreadsheet_id_txt.send_keys("spreadsheetId")
@@ -658,21 +680,32 @@ def build_remote_drivers():
     return [build_remote_driver(desired_cap) for desired_cap in desired_caps]
 
 
-def build_drivers():
+def build_drivers(headless=False):
     """For local testing.
 
     This builds a driver to use on the machine running this script.
 
     """
-    firefox = webdriver.Firefox()
+    ff_opts = FirefoxOptions()
+    chrome_opts = ChromeOptions()
+
+    if headless:
+        ff_opts.set_headless(True)
+        chrome_opts.set_headless(True)
+
+    firefox = webdriver.Firefox(options=ff_opts)
+    chrome = webdriver.Chrome(options=chrome_opts)
+
     firefox.implicitly_wait(3)
-    chrome = webdriver.Chrome()
     chrome.implicitly_wait(3)
     return [firefox, chrome]
 
 
-def main(use_browserstack):
+def main(port=8000, use_browserstack=False, headless=False, client_port=3000):
     BaseTest.USE_BROWSERSTACK = use_browserstack
+    BaseTest.SERVER_PORT = port
+    BaseTest.HEADLESS = headless
+    BaseTest.CLIENT_PORT = client_port
     loader = unittest.defaultTestLoader
     suite = loader.loadTestsFromName(__name__)
     runner = unittest.TextTestRunner(verbosity=2)
@@ -682,11 +715,37 @@ def main(use_browserstack):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Integration test runner.")
     parser.add_argument(
+        "--headless",
+        type=bool,
+        default=False,
+        required=False,
+        help="Whether to run tests in headless mode or not",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=8000,
+        required=False,
+        help="Port to run dummy server on",
+    )
+    parser.add_argument(
         "--browserstack",
         type=bool,
         default=False,
         required=False,
-        help="use a remove driver for BrowserStack",
+        help="Use a remove driver for BrowserStack",
+    )
+    parser.add_argument(
+        "--client-port",
+        type=int,
+        default=3000,
+        required=False,
+        help="Port the client is running on",
     )
     args = parser.parse_args()
-    main(args.browserstack)
+    main(
+        port=args.port,
+        use_browserstack=args.browserstack,
+        headless=args.headless,
+        client_port=args.client_port,
+    )
