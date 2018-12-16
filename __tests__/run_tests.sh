@@ -7,11 +7,13 @@ ut_exit_code=0
 
 # Run integration tests
 if [[ "$to_run" == "integration" || "$to_run" == "all" ]]; then
-    npm run start:test &#>/dev/null &
-    server_pid=$!
-    pipenv run python integrationTests.py
-    it_exit_code=$?
-    kill $server_pid
+    PORT=3345 npm run start:test &
+    if [[ $? != 0 ]]; then
+	echo "Node server failed to start"
+	exit $?
+    fi
+    pipenv run python integrationTests.py --port 8345 --client-port 3345 --headless true
+    kill $(jobs -p)
 fi
 
 # Run unit tests
