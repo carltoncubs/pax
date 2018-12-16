@@ -83,13 +83,14 @@ def make_dummy_handler(response_mappings, force_action, queue):
 
 
 class DummyServer:
-    def __init__(self, response_mappings={}, force_action=None):
+    def __init__(self, response_mappings={}, force_action=None, port=8000):
         self.response_mappings = response_mappings
         self.force_action = force_action
         self.msg_queue = multiprocessing.Queue()
+        self.port = port
 
     def start(self):
-        server_address = ("", 8000)
+        server_address = ("", self.port)
 
         def setter(data):
             print("Settings last request data")
