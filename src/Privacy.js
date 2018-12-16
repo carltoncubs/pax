@@ -12,9 +12,10 @@ class Privacy extends Component {
       <div>
         <Header
           title="Privacy"
-          user="Nicholas Spain"
-          auth
-          email="nicholas.spain96@gmail.com"
+          user={this.props.user}
+          auth={this.props.auth}
+          email={this.props.email}
+          onLogout={this.props.onLogout}
         />
         <div style={{ paddingTop: 50, paddingLeft: 100 }}>
           <h3>What information do we collect?</h3>

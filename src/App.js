@@ -300,7 +300,19 @@ class App extends Component {
                 />
               )}
             />
-            <Route path="/privacy" exact component={Privacy} />
+            <Route
+              path="/privacy"
+              exact
+              render={props => (
+                  <Privacy
+                  {...props}
+                  component={Privacy}
+                  email={this.state.user.email}
+                  name={this.state.user.name}
+                  onLogout={onLogout}
+                />
+              )}
+            />
           </div>
         </Router>
       );
