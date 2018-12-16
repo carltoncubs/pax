@@ -189,7 +189,6 @@ class App extends Component {
                   ? json.autocompleteSheet
                   : ""
               });
-              console.log(ctx.state);
             })
             .catch(error => {
               console.error(error);
@@ -281,7 +280,7 @@ class App extends Component {
                   email={this.state.user.email}
                   name={this.state.user.name}
                   token={this.state.token}
-                  onLogout={resp => console.log(resp)}
+                  onLogout={onLogout}
                 />
               )}
             />
@@ -297,7 +296,7 @@ class App extends Component {
                   email={this.state.user.email}
                   name={this.state.user.name}
                   token={this.state.token}
-                  onLogout={resp => console.log(resp)}
+                  onLogout={onLogout}
                 />
               )}
             />
