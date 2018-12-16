@@ -41,11 +41,11 @@ describe("sign in page", () => {
   });
 
   it("does not allow the form to be sumbitted unless all the fields are filled in", () => {
-    const submitterMock = jest.fn();
-    const validatorMock = _ => () => false;
+    const mock = jest.fn();
+    const submitterMock = _ctx => mock;
     const wrapper = mount(
       <SignInForm
-        validator={validatorMock}
+        validator={_ctx => () => false}
         submitter={submitterMock}
         autocompletion={() => {}}
         token="token"
@@ -53,11 +53,11 @@ describe("sign in page", () => {
     );
     const submitButton = wrapper.find(Button);
     submitButton.simulate("submit");
-    expect(submitterMock.mock.calls.length).toBe(0);
+    expect(mock.mock.calls.length).toBe(0);
   });
 
   it("allows the form to be sumbmitted if all fields a filled in", () => {
-    const submitterMock = jest.fn();
+    const submitterMock = jest.fn(_ctx => _data => _sucMsg => _failMsg => {});
     const validatorMock = _ => () => true;
     const wrapper = mount(
       <SignInForm
@@ -77,38 +77,30 @@ describe("sign in page", () => {
     expect(submitterMock).toBeCalled();
   });
 
-  it("adds a timestamp and date to the submitted data", () => {
-    const app = shallow(<App token="token" />);
+  it("adds a time and date to the submitted data", () => {
+    const app = mount(<App />).children();
     const submitter = app.instance()["submitter"];
     sinon.useFakeTimers(new Date(2018, 1, 1).getTime());
 
     global.fetch = fetch;
 
-    submitter("baseURL")("token")({
+    submitter("baseURL")("token")("endpoint")({
       props: {
         enqueueSnackbar: jest.fn()
       }
-    })("endpoint")({
+    })({
       cubName: "cubName",
       cubSignature: "cubSig",
       parentSignature: "parentSig"
     })("successMsg")("errorMsg");
 
-    expect(global.fetch).toBeCalledWith(expect.any(String), {
-      method: expect.any(String),
-      body: JSON.stringify({
-        cubName: "cubName",
-        cubSignature: "cubSig",
-        parentSignature: "parentSig",
-        timestamp: "00:02:00",
-        date: "2018-02-01"
-      }),
-      headers: {
-        Authorization: expect.any(String)
-      },
-      mode: expect.any(String),
-      cache: expect.any(String)
-    });
+    const data = JSON.parse(fetch.mock.calls[0][1].body);
+
+    expect(data.cubName).toBe("cubName");
+    expect(data.cubSignature).toBe("cubSig");
+    expect(data.parentSignature).toBe("parentSig");
+    expect(data.time).toBe("12:00:00");
+    expect(data.date).toBe("2018-02-01");
   });
 });
 
@@ -131,9 +123,12 @@ describe("sign out page", () => {
   );
 
   it("does not allow the form to be submitted unless all the fields are filled in", () => {
-    const validator = shallow(<App />).instance()["signOutValidator"];
+    const validator = mount(<App />)
+      .children()
+      .instance()["signOutValidator"];
 
-    const submitterMock = jest.fn();
+    const mock = jest.fn();
+    const submitterMock = _ctx => mock;
     const validatorSpy = sinon.spy(validator);
     const wrapper = mount(
       <SignOutForm
@@ -147,11 +142,11 @@ describe("sign out page", () => {
     const submitButton = wrapper.find(Button);
     submitButton.simulate("submit");
     expect(validatorSpy.callCount).toBe(1);
-    expect(submitterMock.mock.calls.length).toBe(0);
+    expect(mock.mock.calls.length).toBe(0);
   });
 
   it("allows the form to be submitted with all the fields are filled in", () => {
-    const submitterMock = jest.fn();
+    const submitterMock = jest.fn(_ctx => _data => _sucMsg => _failMsg => {});
     const wrapper = mount(
       <SignOutForm
         validator={_ => () => true}
@@ -231,9 +226,12 @@ describe("settings page", () => {
   });
 
   it("does not allow the form to be submitted without a spreadsheet ID and attendance sheet", () => {
-    const settingsValidator = shallow(<App />).instance()["settingsValidator"];
+    const settingsValidator = mount(<App />)
+      .children()
+      .instance()["settingsValidator"];
 
-    const submitterMock = jest.fn();
+    const mock = jest.fn();
+    const submitterMock = _ctx => _data => _sucMsg => mock;
     const validatorSpy = sinon.spy(settingsValidator);
     const wrapper = mount(
       <Settings
@@ -247,13 +245,15 @@ describe("settings page", () => {
     const submitButton = wrapper.find(Button);
     submitButton.simulate("submit");
     expect(validatorSpy.callCount).toBe(1);
-    expect(submitterMock.mock.calls.length).toBe(0);
+    expect(mock.mock.calls.length).toBe(0);
   });
 
-  it("does allows the form to be submitted with spreadsheet ID and attendance sheet", () => {
-    const settingsValidator = shallow(<App />).instance()["settingsValidator"];
-
-    const submitterMock = jest.fn();
+  it("allows the form to be submitted with spreadsheet ID and attendance sheet", () => {
+    const settingsValidator = mount(<App />)
+      .children()
+      .instance()["settingsValidator"];
+    const mock = jest.fn();
+    const submitterMock = _ctx => _data => _sucMsg => mock;
     const validatorSpy = sinon.spy(settingsValidator);
     const wrapper = mount(
       <Settings
@@ -272,6 +272,6 @@ describe("settings page", () => {
     const submitButton = wrapper.find(Button);
     submitButton.simulate("submit");
     expect(validatorSpy.callCount).toBe(1);
-    expect(submitterMock.mock.calls.length).toBe(1);
+    expect(mock.mock.calls.length).toBe(1);
   });
 });
