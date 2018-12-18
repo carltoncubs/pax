@@ -30,4 +30,3 @@ COPY ./package-lock.json /app/package-lock.json
 COPY ./src/ /app/src
 
 RUN npm install
-RUN npm install jest
