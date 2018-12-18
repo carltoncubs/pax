@@ -7,6 +7,7 @@ pipeline {
     stages {
 	stage('Unit tests') {
 	    steps {
+		sh 'npm install'
 		sh 'CI=true npm test'
 	    }
 	}
