@@ -7,7 +7,7 @@ pipeline {
     stages {
 	stage('Unit tests') {
 	    steps {
-		sh 'npm test'
+		sh 'CI=true npm test'
 	    }
 	}
 
