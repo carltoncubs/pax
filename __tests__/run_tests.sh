@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+trap "{ kill $(jobs -p) }" SIGINT SIGTERM
+
+cd $(dirname $0)
+
 to_run="${1:-all}"
 
 it_exit_code=0
