@@ -74,8 +74,8 @@
     "start": "node scripts/start.js",
     "start:test": "NODE_ENV=test node scripts/start.js",
     "build": "node scripts/build.js",
-    "test": "jest",
-    "test:watch": "jest --watch"
+    "test": "./node_modules/.bin/jest",
+    "test:watch": "./node_modules./bin/jest --watch"
   },
   "eslintConfig": {
     "extends": "react-app"
