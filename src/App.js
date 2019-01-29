@@ -154,7 +154,11 @@ class App extends Component {
 
     fetch(`${baseURL}/v1/${endpoint}`, options)
       .then(resp => {
-        enqueueSnackbar(successMsg, { variant: "success" });
+        if (resp.ok) {
+          enqueueSnackbar(successMsg, { variant: "success" });
+        } else {
+          throw resp;
+        }
       })
       .catch(error => {
         enqueueSnackbar(errorMsg, { variant: "error" });
