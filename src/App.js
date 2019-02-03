@@ -148,7 +148,8 @@ class App extends Component {
       mode: "cors",
       cache: "default",
       headers: {
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
       }
     };
 

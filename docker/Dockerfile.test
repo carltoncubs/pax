@@ -30,3 +30,5 @@ COPY ./package-lock.json /app/package-lock.json
 COPY ./src/ /app/src
 
 RUN npm install
+EXPOSE 80
+CMD ["npm", "start"]
